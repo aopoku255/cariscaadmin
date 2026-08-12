@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react';
 import Link from 'next/link';
 import { Callout, Field, inputClass, selectClass, textareaClass, checkRowClass } from '@/components/ui';
 import { SubmitButton } from '@/components/forms/SubmitButton';
+import { ImageUpload } from '@/components/forms/ImageUpload';
 import type { ReferenceData } from '@/lib/api/types';
 import { createCpdAction, updateCpdAction } from './actions';
 import { emptyAdminState } from './state';
@@ -26,8 +27,8 @@ const TIMEZONES = [
 ];
 
 export function CpdForm({
-  event, countries,
-}: { event?: AdminCpdEvent; countries: ReferenceData['countries'] }) {
+  event, countries, apiBase,
+}: { event?: AdminCpdEvent; countries: ReferenceData['countries']; apiBase: string }) {
   const [state, formAction] = useActionState(
     event ? updateCpdAction : createCpdAction,
     emptyAdminState,
@@ -74,6 +75,13 @@ export function CpdForm({
           <textarea id="description" name="description" className={textareaClass}
             defaultValue={event?.description ?? ''} style={{ minHeight: 160 }} />
         </Field>
+
+        <ImageUpload
+          name="bannerFileId"
+          apiBase={apiBase}
+          initial={event?.banner ? { id: event.banner.id, url: event.banner.url } : null}
+          hint="Shown on the event page and in listings. Landscape works best — it is cropped to 16:9."
+        />
       </fieldset>
 
       <fieldset className={styles.group}>

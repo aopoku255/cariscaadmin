@@ -1,0 +1,42 @@
+.wrap { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.label { font-family: var(--font-heading); font-weight: 600; font-size: var(--text-base); }
+.hint { font-size: var(--text-sm); color: var(--color-text-subtle); margin: 0; }
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+  text-align: center;
+}
+.dropText { font-size: var(--text-sm); color: var(--color-text-subtle); }
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+/* 16:9, matching how the banner is cropped on the public event page — what an
+   admin sees here is what a participant will see. */
+.image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--color-surface-sunken);
+}
+
+.previewActions { display: flex; gap: var(--space-2); }
+
+.error { font-size: var(--text-sm); color: var(--color-danger); font-weight: 600; margin: 0; }

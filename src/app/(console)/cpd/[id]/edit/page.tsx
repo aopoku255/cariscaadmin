@@ -33,6 +33,9 @@ export default async function EditCpdPage({ params }: { params: Params }) {
     countries = data.countries;
   } catch { /* form still works */ }
 
+  // The browser loads image previews directly, so it needs the public base.
+  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+
   return (
     <>
       <header className={styles.pageHead}>
@@ -47,7 +50,7 @@ export default async function EditCpdPage({ params }: { params: Params }) {
         </div>
       </header>
 
-      <CpdForm event={event} countries={countries} />
+      <CpdForm event={event} countries={countries} apiBase={apiBase} />
     </>
   );
 }

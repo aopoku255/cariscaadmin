@@ -125,6 +125,13 @@ export interface PublicEvent {
   registrationClosesAt: string | null;
   status: EventStatus;
   issuesCertificate: boolean;
+  banner: {
+    id: string;
+    url: string;
+    mimeType: string;
+    sizeBytes: number;
+    originalName: string;
+  } | null;
   attendance?: {
     rule: 'NONE' | 'CHECK_IN' | 'SESSION_PERCENT';
     minPercent: number | null;

@@ -20,6 +20,9 @@ export default async function NewCpdPage() {
     countries = data.countries;
   } catch { /* the form still works without the country list */ }
 
+  // The browser loads image previews directly, so it needs the public base.
+  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+
   return (
     <>
       <header className={styles.pageHead}>
@@ -32,7 +35,7 @@ export default async function NewCpdPage() {
         </div>
       </header>
 
-      <CpdForm countries={countries} />
+      <CpdForm countries={countries} apiBase={apiBase} />
     </>
   );
 }
