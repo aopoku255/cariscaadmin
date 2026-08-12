@@ -143,7 +143,7 @@ export function PartnerManager({
                   {!p.isActive && <Badge tone="neutral">Retired</Badge>}
                 </div>
                 <p className={styles.meta}>
-                  {[p.shortName, p.country?.name].filter(Boolean).join(' · ') || '—'}
+                  {[p.shortName, p.country?.name].filter(Boolean).join(' · ') || '-'}
                 </p>
                 {p.websiteUrl && (
                   <a href={p.websiteUrl} target="_blank" rel="noreferrer" className={styles.link}>

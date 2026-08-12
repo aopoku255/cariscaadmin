@@ -113,7 +113,7 @@ export default async function AttendancePage({ params }: { params: Params }) {
             <h2 className={styles.cardTitle}>On the day</h2>
             <ol className={styles.runbook}>
               <li>Open this page on the phone you will scan with and press <strong>Start scanning</strong>.</li>
-              <li>If a QR code will not scan, search by name — it always works.</li>
+              <li>If a QR code will not scan, search by name, which always works.</li>
               <li>Someone who has not paid is <strong>let in</strong> and flagged; send them to the desk.</li>
               <li>If the wifi drops, keep scanning. Scans are saved and sync when it returns.</li>
               <li>After the event, press <strong>Close the register</strong> below.</li>

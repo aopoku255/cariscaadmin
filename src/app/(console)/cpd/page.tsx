@@ -114,7 +114,7 @@ export default async function CpdListPage({ searchParams }: { searchParams: Sear
                     <td className={styles.nowrap}>
                       {e.deliveryMode === 'HYBRID' ? 'In person + online' : e.deliveryMode === 'ONLINE' ? 'Online' : 'In person'}
                     </td>
-                    <td className={styles.numeric}>{e.capacity ?? '—'}</td>
+                    <td className={styles.numeric}>{e.capacity ?? '-'}</td>
                   </tr>
                 ))}
               </tbody>

@@ -48,7 +48,7 @@ export function timezoneLabel(iso: string, timezone: string) {
  * the currency code; it never touches the magnitude.
  */
 export function money(m: Money | null | undefined) {
-  if (!m) return '—';
+  if (!m) return '-';
   const n = Number(m.formatted);
   if (Number.isNaN(n)) return `${m.currency} ${m.formatted}`;
   try {

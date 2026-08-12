@@ -250,7 +250,7 @@ export function Scanner({ eventId, sessionId = null }: { eventId: string; sessio
           <div className={styles.cameraIdle}>
             {cameraState === 'unsupported' && (
               <p className={styles.cameraNote}>
-                This browser cannot scan QR codes. Use search below — it works everywhere.
+                This browser cannot scan QR codes. Use search below, which works everywhere.
               </p>
             )}
             {cameraState === 'denied' && (

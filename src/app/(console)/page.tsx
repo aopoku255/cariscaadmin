@@ -120,7 +120,7 @@ export default async function AdminOverview() {
                       <td className={styles.nowrap}>
                         {eventDateRange(event.startAt, event.endAt, event.timezone)}
                       </td>
-                      <td className={styles.numeric}>{event.capacity ?? '—'}</td>
+                      <td className={styles.numeric}>{event.capacity ?? '-'}</td>
                     </tr>
                   ))}
                 </tbody>

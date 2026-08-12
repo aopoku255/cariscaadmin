@@ -280,7 +280,7 @@ function ChecklistItem({ done, label, note }: { done: boolean; label: string; no
       <span aria-hidden="true">{done ? '✓' : '○'}</span>
       <span>
         {label}
-        <span className="visually-hidden">{done ? ' — done' : ' — outstanding'}</span>
+        <span className="visually-hidden">{done ? ': done' : ': outstanding'}</span>
         {note && <span className={styles.checkNoteText}>{note}</span>}
       </span>
     </li>

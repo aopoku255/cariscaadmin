@@ -178,17 +178,17 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
                 {registrations.map((r) => (
                   <tr key={r.id}>
                     <td>
-                      <strong>{r.participant?.name ?? '—'}</strong>
+                      <strong>{r.participant?.name ?? '-'}</strong>
                       <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-subtle)' }}>
                         {r.participant?.email}
                       </div>
                     </td>
-                    <td>{r.participant?.organization ?? '—'}</td>
-                    <td>{r.event?.title ?? '—'}</td>
+                    <td>{r.participant?.organization ?? '-'}</td>
+                    <td>{r.event?.title ?? '-'}</td>
                     <td><Badge tone={registrationTone[r.status]}>{registrationStatusLabel[r.status]}</Badge></td>
                     <td className={styles.nowrap}>{r.attendanceMode === 'VIRTUAL' ? 'Online' : 'In person'}</td>
                     <td className={styles.numeric}>
-                      {!r.amount ? '—' : r.amount.amountMinor === 0 ? 'Free' : money(r.amount)}
+                      {!r.amount ? '-' : r.amount.amountMinor === 0 ? 'Free' : money(r.amount)}
                     </td>
                     <td className={styles.mono}>{r.reference}</td>
                   </tr>

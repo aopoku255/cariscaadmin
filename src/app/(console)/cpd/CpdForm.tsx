@@ -80,7 +80,7 @@ export function CpdForm({
           name="bannerFileId"
           apiBase={apiBase}
           initial={event?.banner ? { id: event.banner.id, url: event.banner.url } : null}
-          hint="Shown on the event page and in listings. Landscape works best — it is cropped to 16:9."
+          hint="Shown on the event page and in listings. Landscape works best. It is cropped to 16:9."
         />
       </fieldset>
 
@@ -167,7 +167,7 @@ export function CpdForm({
 
         {needsLink && (
           <Field label="Joining link" htmlFor="onlineUrl" error={err('onlineUrl')}
-            hint="Only shared with confirmed participants — never shown publicly.">
+            hint="Only shared with confirmed participants, never shown publicly.">
             <input id="onlineUrl" name="onlineUrl" type="url" className={inputClass}
               defaultValue={event?.onlineUrl ?? ''} placeholder="https://" />
           </Field>
@@ -239,7 +239,7 @@ export function CpdForm({
             <span>
               <strong>Require payment before issuing</strong>
               <span className={styles.checkNote}>
-                Leave this off for a free event — otherwise eligibility waits on a
+                Leave this off for a free event. Otherwise eligibility waits on a
                 payment that will never arrive and no certificate is ever issued.
               </span>
             </span>
