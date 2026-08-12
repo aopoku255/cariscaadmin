@@ -1,0 +1,139 @@
+/* The admin console is a tool, not a document: dense, scannable, no hero. */
+.shell {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.sidebar {
+  background: var(--carisca-navy);
+  color: #dbe4f5;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebarHead { padding: var(--space-5) var(--space-4) var(--space-4); border-bottom: 1px solid rgb(255 255 255 / 10%); }
+.brand { text-decoration: none; display: block; }
+.brandMark {
+  display: block; font-family: var(--font-heading); font-weight: 700;
+  font-size: var(--text-lg); letter-spacing: 0.05em; color: #fff;
+}
+.brandSub { display: block; font-size: var(--text-xs); color: #93a9d4; letter-spacing: 0.04em; }
+
+.nav { display: flex; flex-direction: column; padding: var(--space-3) var(--space-2); gap: 2px; flex: 1; }
+
+.navItem, .navItemActive {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--text-base);
+  border-left: 3px solid transparent;
+}
+.navItem { color: #c2d0ea; }
+.navItem:hover { background: rgb(255 255 255 / 8%); color: #fff; }
+.navItemActive {
+  background: rgb(255 255 255 / 12%);
+  color: #fff;
+  /* The cyan works here — a rule on navy, never text on white. */
+  border-left-color: var(--carisca-cyan);
+}
+
+.sidebarFoot { padding: var(--space-4); border-top: 1px solid rgb(255 255 255 / 10%); }
+.who { font-family: var(--font-heading); font-weight: 600; color: #fff; font-size: var(--text-base); }
+.role { font-size: var(--text-xs); color: #93a9d4; margin-bottom: var(--space-3); }
+.footLinks { display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
+.footLinks a { color: #c2d0ea; text-decoration: none; }
+.footLinks a:hover { color: #fff; text-decoration: underline; }
+.signOut {
+  background: none; border: none; padding: 0; cursor: pointer; text-align: left;
+  color: #c2d0ea; font-size: var(--text-sm); text-decoration: underline; font-family: inherit;
+}
+.signOut:hover { color: #fff; }
+
+.content { padding: var(--space-6); min-width: 0; }
+
+/* --- page furniture shared across admin pages --- */
+.pageHead {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-5);
+  padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border);
+}
+.pageTitle { font-size: var(--text-2xl); }
+.pageSub { color: var(--color-text-subtle); margin-top: var(--space-1); }
+.pageActions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+
+.stats {
+  display: grid; gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  margin-bottom: var(--space-6);
+}
+.stat {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-4);
+}
+.statLabel {
+  font-family: var(--font-heading); font-weight: 600; font-size: var(--text-xs);
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-subtle);
+}
+.statValue {
+  font-family: var(--font-heading); font-size: var(--text-3xl); font-weight: 600;
+  font-variant-numeric: tabular-nums; line-height: 1.1; margin-top: var(--space-1);
+}
+.statNote { font-size: var(--text-sm); color: var(--color-text-subtle); margin-top: var(--space-1); }
+
+.tableWrap {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); overflow-x: auto;
+}
+.table { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
+.table th, .table td {
+  text-align: left; padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border); vertical-align: top;
+}
+.table thead th {
+  font-family: var(--font-heading); font-size: var(--text-xs); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-subtle);
+  background: var(--color-surface-sunken); white-space: nowrap;
+}
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover { background: var(--color-surface-sunken); }
+.table a { text-decoration: none; font-weight: 600; }
+.table a:hover { text-decoration: underline; }
+.numeric { text-align: right; font-variant-numeric: tabular-nums; }
+.nowrap { white-space: nowrap; }
+.mono { font-family: var(--font-mono); font-size: var(--text-sm); }
+
+.filters {
+  display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: flex-end;
+  margin-bottom: var(--space-4); background: var(--color-surface);
+  border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-4);
+}
+.filterField { display: flex; flex-direction: column; gap: var(--space-1); }
+.filterLabel {
+  font-family: var(--font-heading); font-weight: 600; font-size: var(--text-xs);
+  text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-subtle);
+}
+.grow { flex: 1; min-width: 200px; }
+
+.pager {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-4); margin-top: var(--space-4); flex-wrap: wrap;
+}
+.pagerInfo { font-size: var(--text-sm); color: var(--color-text-subtle); }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { position: static; height: auto; }
+  .nav { flex-direction: row; overflow-x: auto; }
+  .navItem, .navItemActive { border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+  .navItemActive { border-bottom-color: var(--carisca-cyan); }
+  .content { padding: var(--space-4); }
+}

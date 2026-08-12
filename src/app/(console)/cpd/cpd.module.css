@@ -1,0 +1,118 @@
+.back { font-size: var(--text-sm); text-decoration: none; font-weight: 600; }
+.back:hover { text-decoration: underline; }
+
+.titleRow { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+
+.publicLink {
+  font-size: var(--text-sm); color: var(--color-text-subtle);
+  margin-bottom: var(--space-5);
+}
+
+.columns {
+  display: grid; grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--space-5); align-items: start;
+}
+.mainCol, .sideCol { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.cardTitle { font-size: var(--text-md); margin-bottom: var(--space-4); }
+
+/* --- the create/edit form --- */
+.form { display: flex; flex-direction: column; gap: var(--space-5); max-width: 760px; }
+.group {
+  border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+  background: var(--color-surface); padding: var(--space-5);
+  display: flex; flex-direction: column; gap: var(--space-4); margin: 0;
+}
+.groupTitle {
+  font-family: var(--font-heading); font-weight: 600; font-size: var(--text-md);
+  padding: 0 var(--space-2); margin-left: calc(var(--space-2) * -1);
+}
+.groupNote { font-size: var(--text-sm); color: var(--color-text-subtle); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.inline { display: flex; gap: var(--space-2); }
+.inline input[type="date"] { flex: 2; }
+.inline input[type="time"] { flex: 1; min-width: 96px; }
+.checkNote { display: block; font-size: var(--text-sm); color: var(--color-text-subtle); margin-top: 2px; }
+.formActions { display: flex; align-items: center; gap: var(--space-4); }
+.cancel { color: var(--color-text-subtle); text-decoration: none; font-size: var(--text-base); }
+.cancel:hover { text-decoration: underline; }
+
+/* --- lifecycle --- */
+.lifecycle { display: flex; flex-direction: column; gap: var(--space-3); }
+.lifecycleButtons { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.lifecycleNote { font-size: var(--text-sm); color: var(--color-text-subtle); }
+.problems { margin: var(--space-2) 0 0; padding-left: var(--space-5); }
+.problems li { margin-bottom: var(--space-1); }
+
+.cancelForm {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-4); border: 1px solid var(--color-danger);
+  border-radius: var(--radius); background: var(--color-danger-wash);
+}
+.cancelLabel { font-size: var(--text-sm); font-weight: 600; }
+.cancelReason {
+  width: 100%; padding: var(--space-2); border-radius: var(--radius);
+  border: 1px solid var(--color-border-strong); font-family: inherit; font-size: var(--text-base);
+}
+.cancelActions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+
+/* --- checklist --- */
+.checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.checkDone, .checkTodo {
+  display: grid; grid-template-columns: 18px 1fr; gap: var(--space-2);
+  font-size: var(--text-base); align-items: start;
+}
+.checkDone { color: var(--color-success); }
+.checkTodo { color: var(--color-text-subtle); }
+.checkNoteText { display: block; font-size: var(--text-sm); color: var(--color-warning); }
+
+/* --- details list --- */
+.details { display: grid; gap: var(--space-2); margin: 0; }
+.details > div { display: grid; grid-template-columns: 100px 1fr; gap: var(--space-3); font-size: var(--text-base); }
+.details dt { color: var(--color-text-subtle); font-size: var(--text-sm); }
+.details dd { margin: 0; }
+
+/* --- questions editor --- */
+.questions { display: flex; flex-direction: column; gap: var(--space-4); }
+.muted { color: var(--color-text-subtle); font-size: var(--text-sm); }
+.questionList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.questionRow {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3);
+  padding: var(--space-3); border: 1px solid var(--color-border);
+  border-radius: var(--radius); background: var(--color-surface-sunken);
+}
+.questionMain { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.questionMeta { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
+.questionMeta select { max-width: 240px; }
+.requiredToggle { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); cursor: pointer; }
+.requiredToggle input { width: 16px; height: 16px; accent-color: var(--color-accent); }
+.options { display: flex; flex-direction: column; gap: var(--space-1); }
+.optionsLabel { font-size: var(--text-xs); color: var(--color-text-subtle); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.optionsWarning { font-size: var(--text-sm); color: var(--color-warning); font-weight: 600; }
+.questionActions { display: flex; flex-direction: column; gap: var(--space-1); align-items: flex-end; }
+.iconButton {
+  background: var(--color-surface); border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm); width: 28px; height: 26px; cursor: pointer; line-height: 1;
+}
+.iconButton:disabled { opacity: 0.35; cursor: not-allowed; }
+.removeButton {
+  background: none; border: none; color: var(--color-danger); cursor: pointer;
+  font-size: var(--text-sm); text-decoration: underline; padding: 0; margin-top: var(--space-1);
+}
+.questionsFooter { display: flex; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.readonlyQuestions { margin: 0; padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); }
+
+/* --- misc --- */
+.miniTable { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.miniTable th, .miniTable td { text-align: left; padding: var(--space-2); border-bottom: 1px solid var(--color-border); }
+.miniTable thead th { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-subtle); }
+.miniTable tbody tr:last-child td { border-bottom: none; }
+
+.breakdowns { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+.breakdownTitle { font-size: var(--text-sm); color: var(--color-text-subtle); margin-bottom: var(--space-2); }
+.breakdown { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-base); }
+.breakdown li { display: flex; justify-content: space-between; gap: var(--space-3); }
+
+@media (max-width: 1024px) {
+  .columns { grid-template-columns: minmax(0, 1fr); }
+  .pair, .breakdowns { grid-template-columns: 1fr; }
+}
