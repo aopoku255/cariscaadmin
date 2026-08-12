@@ -143,3 +143,28 @@
 @media (max-width: 640px) {
   .partnerRow { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* --- fees editor --- */
+.priceRows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.priceRow {
+  display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border); border-radius: var(--radius);
+  background: var(--color-surface-sunken);
+}
+.priceMain { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: var(--space-3); }
+.priceAmount { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: var(--space-2); }
+.priceAmount input { text-align: right; font-variant-numeric: tabular-nums; }
+
+.priceConditions { display: flex; gap: var(--space-3); align-items: flex-end; flex-wrap: wrap; }
+.priceCondition { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 150px; }
+.priceCondition > span {
+  font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--color-text-subtle); font-weight: 600;
+}
+.priceAddButtons { display: flex; gap: var(--space-2); }
+.amountCell { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+@media (max-width: 720px) {
+  .priceMain { grid-template-columns: minmax(0, 1fr); }
+}

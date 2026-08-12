@@ -2,15 +2,17 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireStaff, can } from '@/lib/auth/require-staff';
 import { apiAsUser } from '@/lib/auth/session';
+import { apiRequest } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/client';
 import { Badge, Callout, ButtonLink, Card } from '@/components/ui';
 import { eventDateRange, eventTime, timezoneLabel, money } from '@/lib/format';
 import { statusTone, statusLabel } from '../../status';
 import type { AdminCpdEvent, EventSummary } from '../types';
-import type { Partner } from '@/lib/api/types';
+import type { Partner, ReferenceData } from '@/lib/api/types';
 import { LifecycleControls } from './LifecycleControls';
 import { QuestionsEditor } from './QuestionsEditor';
 import { EventPartners } from './EventPartners';
+import { PricesEditor } from './PricesEditor';
 import styles from '../cpd.module.css';
 import admin from '../../admin.module.css';
 
@@ -54,6 +56,12 @@ export default async function AdminEventPage({
       library = data ?? [];
     } catch { /* the card degrades to read-only */ }
   }
+
+  let currencies: ReferenceData['currencies'] = [];
+  try {
+    const { data } = await apiRequest<ReferenceData>('/reference', { revalidate: 3600 });
+    currencies = data.currencies;
+  } catch { /* the editor falls back to the codes it already has */ }
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
@@ -181,30 +189,12 @@ export default async function AdminEventPage({
 
           <Card>
             <h2 className={styles.cardTitle}>Fees</h2>
-            {event.prices && event.prices.length > 0 ? (
-              <table className={styles.miniTable}>
-                <thead>
-                  <tr><th>Rate</th><th>Attending</th><th>Who</th><th className={admin.numeric}>Amount</th></tr>
-                </thead>
-                <tbody>
-                  {event.prices.map((p) => (
-                    <tr key={p.id}>
-                      <td>{p.label}</td>
-                      <td>{p.attendanceMode === 'ANY' ? 'Either' : p.attendanceMode === 'VIRTUAL' ? 'Online' : 'In person'}</td>
-                      <td>{p.audience === 'ANY' ? 'Everyone' : p.audience.replace(/_/g, ' ').toLowerCase()}</td>
-                      <td className={admin.numeric}>
-                        {p.money.amountMinor === 0 ? 'Free' : money(p.money)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <Callout tone="warning" title="No fee is set">
-                Every event needs at least one price before it can be published —
-                use zero for a free event.
-              </Callout>
-            )}
+            <PricesEditor
+              eventId={event.id}
+              prices={event.prices ?? []}
+              currencies={currencies}
+              canEdit={can(user, 'cpd.update')}
+            />
           </Card>
 
           {summary && summary.topOrganizations.length > 0 && (
