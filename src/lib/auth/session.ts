@@ -28,9 +28,10 @@ export interface Tokens { accessToken: string; refreshToken: string }
 
 export async function setSessionCookies({ accessToken, refreshToken }: Tokens) {
   const jar = await cookies();
-  // Access token expiry is enforced by the API; the cookie simply outlives a
-  // page view. The refresh token is the one with a meaningful lifetime.
-  jar.set(ACCESS, accessToken, { ...baseCookie, maxAge: 60 * 60 });
+  // Matched to the token's own 15-minute life. When they disagree the cookie
+  // outlives the token, every render takes the refresh path, and middleware
+  // never gets the signal that a refresh is due.
+  jar.set(ACCESS, accessToken, { ...baseCookie, maxAge: 15 * 60 });
   jar.set(REFRESH, refreshToken, { ...baseCookie, maxAge: 60 * 60 * 24 * 30 });
 }
 
@@ -75,27 +76,21 @@ export async function refreshSession(): Promise<Tokens | null> {
 /**
  * The current user, or null.
  *
- * Transparently refreshes once on a 401 so a participant filling in a long
- * registration form is not thrown out mid-way when their access token expires.
+ * Deliberately read-only. This runs during page render, where Next.js forbids
+ * cookie writes — refreshing here throws "Cookies can only be modified in a
+ * Server Action or Route Handler". Renewal is middleware's job; by the time a
+ * page renders the token in the cookie is already current.
+ *
+ * A 401 at this point means the session is genuinely over, so null is the
+ * honest answer rather than something to retry.
  */
 export async function getSession(): Promise<SessionUser | null> {
   const token = await getAccessToken();
-
-  if (token) {
-    try {
-      // /auth/me wraps the record: { user: { ... } }.
-      const { data } = await apiRequest<{ user: SessionUser }>('/auth/me', { token });
-      return data.user;
-    } catch (err) {
-      if (!(err instanceof ApiError) || err.status !== 401) return null;
-    }
-  }
-
-  const refreshed = await refreshSession();
-  if (!refreshed) return null;
+  if (!token) return null;
 
   try {
-    const { data } = await apiRequest<{ user: SessionUser }>('/auth/me', { token: refreshed.accessToken });
+    // /auth/me wraps the record: { user: { ... } }.
+    const { data } = await apiRequest<{ user: SessionUser }>('/auth/me', { token });
     return data.user;
   } catch {
     return null;
@@ -103,8 +98,9 @@ export async function getSession(): Promise<SessionUser | null> {
 }
 
 /**
- * Calls the API as the signed-in user, refreshing once if the token has just
- * expired. Every authenticated server action goes through this.
+ * Calls the API as the signed-in user, refreshing once if the token expired
+ * mid-action. Safe to write cookies here — unlike a render, a Server Action
+ * may set them.
  */
 export async function apiAsUser<T>(
   path: string,
