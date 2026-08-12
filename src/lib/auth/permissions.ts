@@ -24,6 +24,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: '/', label: 'Overview' },
   { href: '/cpd', label: 'CPD events', permission: 'cpd.view' },
   { href: '/registrations', label: 'Registrations', permission: 'cpd.registration.view' },
+  { href: '/partners', label: 'Partners', permission: 'partners.view' },
   { href: '/users', label: 'Users', permission: 'users.view' },
   { href: '/audit', label: 'Audit log', permission: 'audit.view' },
 ];

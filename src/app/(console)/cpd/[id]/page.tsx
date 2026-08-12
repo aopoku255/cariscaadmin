@@ -7,8 +7,10 @@ import { Badge, Callout, ButtonLink, Card } from '@/components/ui';
 import { eventDateRange, eventTime, timezoneLabel, money } from '@/lib/format';
 import { statusTone, statusLabel } from '../../status';
 import type { AdminCpdEvent, EventSummary } from '../types';
+import type { Partner } from '@/lib/api/types';
 import { LifecycleControls } from './LifecycleControls';
 import { QuestionsEditor } from './QuestionsEditor';
+import { EventPartners } from './EventPartners';
 import styles from '../cpd.module.css';
 import admin from '../../admin.module.css';
 
@@ -42,6 +44,18 @@ export default async function AdminEventPage({
     if (err instanceof ApiError && (err.status === 404 || err.status === 403)) notFound();
     throw err;
   }
+
+  // The picker chooses from what already exists — that is what keeps one
+  // KNUST in the system rather than four.
+  let library: Partner[] = [];
+  if (can(user, 'partners.view')) {
+    try {
+      const { data } = await apiAsUser<Partner[]>('/partners', { query: { limit: 100 } });
+      library = data ?? [];
+    } catch { /* the card degrades to read-only */ }
+  }
+
+  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
   let summary: EventSummary | null = null;
   if (can(user, 'cpd.registration.view')) {
@@ -151,6 +165,19 @@ export default async function AdminEventPage({
               canEdit={can(user, 'cpd.question.manage')}
             />
           </Card>
+
+          {can(user, 'partners.view') && (
+            <Card>
+              <h2 className={styles.cardTitle}>Partners</h2>
+              <EventPartners
+                eventId={event.id}
+                attached={event.partners ?? []}
+                library={library}
+                canEdit={can(user, 'cpd.update')}
+                apiBase={apiBase}
+              />
+            </Card>
+          )}
 
           <Card>
             <h2 className={styles.cardTitle}>Fees</h2>

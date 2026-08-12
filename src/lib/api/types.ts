@@ -132,6 +132,7 @@ export interface PublicEvent {
     sizeBytes: number;
     originalName: string;
   } | null;
+  partners?: Partner[];
   attendance?: {
     rule: 'NONE' | 'CHECK_IN' | 'SESSION_PERCENT';
     minPercent: number | null;
@@ -231,4 +232,20 @@ export interface SessionUser {
   emailVerified?: boolean;
   roles?: { key: string; name: string }[];
   permissions?: string[];
+}
+
+export type PartnerRole = 'PARTNER' | 'SPONSOR' | 'HOST' | 'FUNDER' | 'ACCREDITOR' | 'SUPPORTER';
+
+export interface Partner {
+  id: string;
+  name: string;
+  shortName: string | null;
+  slug: string;
+  description: string | null;
+  websiteUrl: string | null;
+  logo: { id: string; url: string; mimeType: string } | null;
+  country: { code: string; name: string } | null;
+  isActive: boolean;
+  /** Present only when read through an event. */
+  role?: PartnerRole;
 }
