@@ -1,0 +1,70 @@
+.list { display: flex; flex-direction: column; gap: var(--space-5); }
+
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: var(--space-5);
+  display: flex; flex-direction: column; gap: var(--space-4);
+}
+.cardHead { display: flex; flex-direction: column; gap: var(--space-1); }
+.question { font-family: var(--font-heading); font-weight: 600; font-size: var(--text-md); }
+.meta { font-size: var(--text-sm); color: var(--color-text-subtle); }
+.note { font-size: var(--text-sm); color: var(--color-text-subtle); }
+
+/*
+  A bar list, not a pie. Counts are a magnitude comparison, so one hue and a
+  shared baseline; the option name is the identity channel, which is why every
+  bar is the same colour rather than a cycled palette that would run out at
+  nine options.
+*/
+.bars { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2) var(--space-4); align-items: baseline; }
+.barLabel { min-width: 0; overflow-wrap: anywhere; font-size: var(--text-sm); }
+.barValue {
+  font-variant-numeric: tabular-nums; font-size: var(--text-sm);
+  color: var(--color-text-muted); white-space: nowrap;
+}
+.barValueCount { font-weight: 600; color: var(--color-text); }
+
+/* Track and fill are two steps of one ramp: light wash behind, accent in front. */
+.barTrack {
+  grid-column: 1 / -1; display: block;
+  height: 14px; background: var(--color-accent-wash);
+  border-radius: 3px; overflow: hidden;
+}
+.barFill {
+  display: block; height: 100%; background: var(--color-accent);
+  /* Square where it meets the baseline, rounded at the data end. */
+  border-radius: 0 4px 4px 0;
+  min-width: 0;
+}
+.barZero { color: var(--color-text-subtle); }
+.retired {
+  font-size: var(--text-xs); color: var(--color-warning);
+  font-weight: 600; margin-left: var(--space-2);
+}
+
+/* Free text: the answers themselves, which is what a reader wants here. */
+.textList {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  margin: 0; padding: 0; list-style: none;
+  max-height: 320px; overflow-y: auto;
+}
+.textItem {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-sunken); border-radius: var(--radius);
+  font-size: var(--text-sm); white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.repeated { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.repeatedChip {
+  font-size: var(--text-sm); padding: 2px var(--space-2);
+  background: var(--color-accent-wash); color: var(--color-accent-text);
+  border-radius: 999px; font-weight: 600;
+}
+
+/* Number questions lead with the figures; the histogram is the supporting detail. */
+.stats { display: flex; flex-wrap: wrap; gap: var(--space-5); }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.statLabel { font-size: var(--text-xs); color: var(--color-text-subtle); text-transform: uppercase; letter-spacing: 0.04em; }
+.statValue { font-family: var(--font-heading); font-weight: 600; font-size: var(--text-lg); }
+
+.empty { color: var(--color-text-subtle); font-size: var(--text-sm); }

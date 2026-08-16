@@ -1,0 +1,41 @@
+.actionCell { display: flex; flex-direction: column; gap: 2px; }
+.actionKey { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-subtle); }
+
+.resource { display: flex; align-items: baseline; gap: var(--space-2); }
+.resourceId { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--color-text-subtle); }
+
+/* The expander. Native <details> so a row opens with JavaScript disabled. */
+.detail { font-size: var(--text-sm); }
+.summary {
+  cursor: pointer; color: var(--color-accent-text);
+  font-weight: 600; list-style: none; white-space: nowrap;
+}
+.summary::-webkit-details-marker { display: none; }
+.summary::before { content: '▸ '; display: inline-block; transition: transform 0.15s; }
+.detail[open] .summary::before { content: '▾ '; }
+
+.detailBody {
+  margin-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-3); background: var(--color-surface-sunken);
+  border-radius: var(--radius); max-width: 640px;
+}
+
+/* Only the fields that actually moved, old beside new. */
+.changes { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; }
+.change { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: var(--space-3); align-items: baseline; }
+.changeKey { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--color-text-subtle); overflow-wrap: anywhere; }
+.changeValues { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); overflow-wrap: anywhere; }
+.was { text-decoration: line-through; color: var(--color-text-subtle); }
+.arrow { color: var(--color-text-subtle); }
+.now { font-weight: 600; }
+
+.blockTitle { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-subtle); }
+.json {
+  font-family: var(--font-mono); font-size: var(--text-xs);
+  white-space: pre-wrap; overflow-wrap: anywhere; margin: 0;
+}
+.context { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: var(--text-xs); color: var(--color-text-subtle); }
+
+@media (max-width: 720px) {
+  .change { grid-template-columns: 1fr; gap: 2px; }
+}

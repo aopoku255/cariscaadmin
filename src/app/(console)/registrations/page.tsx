@@ -81,12 +81,14 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
         {can(user, 'cpd.registration.export') && params.eventId && (
           <div className={styles.pageActions}>
             {/*
-              A plain link, not fetch: the browser handles the download and the
-              Content-Disposition header, and the API audits who took a copy.
+              Through our own route handler rather than straight at the API: a
+              browser navigating to a download cannot send the bearer token, so
+              a direct link returned 401 and the admin got JSON instead of a
+              spreadsheet. The API still audits who took a copy.
             */}
             <a
               className="download"
-              href={`${process.env.NEXT_PUBLIC_API_URL}/registrations/export?eventId=${params.eventId}${params.status ? `&status=${params.status}` : ''}`}
+              href={`/registrations/export?eventId=${params.eventId}${params.status ? `&status=${params.status}` : ''}${params.attendanceMode ? `&attendanceMode=${params.attendanceMode}` : ''}`}
               style={{
                 display: 'inline-flex', alignItems: 'center', padding: '9px 18px',
                 borderRadius: 'var(--radius)', border: '1px solid var(--color-accent)',
@@ -178,7 +180,9 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
                 {registrations.map((r) => (
                   <tr key={r.id}>
                     <td>
-                      <strong>{r.participant?.name ?? '-'}</strong>
+                      <Link href={`/registrations/${encodeURIComponent(r.reference)}`}>
+                        <strong>{r.participant?.name ?? '-'}</strong>
+                      </Link>
                       <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-subtle)' }}>
                         {r.participant?.email}
                       </div>
@@ -190,7 +194,11 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
                     <td className={styles.numeric}>
                       {!r.amount ? '-' : r.amount.amountMinor === 0 ? 'Free' : money(r.amount)}
                     </td>
-                    <td className={styles.mono}>{r.reference}</td>
+                    <td className={styles.mono}>
+                      <Link href={`/registrations/${encodeURIComponent(r.reference)}`}>
+                        {r.reference}
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -1,0 +1,23 @@
+# Keeps the build context small and secrets out of image layers.
+
+node_modules
+.next
+npm-debug.log*
+
+# Secrets — Next inlines NEXT_PUBLIC_* at build time, so these arrive as build
+# args instead of being copied in.
+.env
+.env.*
+!.env.local.example
+
+# Not needed to build or run
+.git
+.gitignore
+.github
+.vscode
+.idea
+.DS_Store
+README.md
+Dockerfile
+.dockerignore
+tsconfig.tsbuildinfo

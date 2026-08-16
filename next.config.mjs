@@ -2,6 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Emits .next/standalone with only the files actually reached at runtime, so
+  // the container ships without the full node_modules tree. No effect on
+  // `next dev` or a plain `next start`.
+  output: 'standalone',
   async headers() {
     return [{
       source: '/:path*',

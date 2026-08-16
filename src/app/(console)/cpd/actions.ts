@@ -71,6 +71,10 @@ function eventBody(fd: FormData) {
     title: str(fd, 'title'),
     shortDescription: str(fd, 'shortDescription'),
     description: str(fd, 'description'),
+    // Null rather than undefined when empty: the field is always present in
+    // this form, so a blank one means "no banner" and has to clear the column.
+    // Omitting it would make Remove silently do nothing.
+    bannerFileId: str(fd, 'bannerFileId') ? Number(str(fd, 'bannerFileId')) : null,
     startAt: instant(fd, 'startDate', 'startTime'),
     endAt: instant(fd, 'endDate', 'endTime'),
     timezone: str(fd, 'timezone') ?? 'Africa/Accra',

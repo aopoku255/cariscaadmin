@@ -103,6 +103,11 @@ export default async function AdminEventPage({
             </ButtonLink>
           )}
           {can(user, 'cpd.registration.view') && (
+            <ButtonLink href={`/cpd/${event.id}/responses`} variant="secondary">
+              Responses
+            </ButtonLink>
+          )}
+          {can(user, 'cpd.registration.view') && (
             <ButtonLink href={`/registrations?eventId=${event.id}`}>
               Registrations{summary ? ` (${summary.totals.all})` : ''}
             </ButtonLink>
@@ -114,6 +119,26 @@ export default async function AdminEventPage({
         <Callout tone="success" title="Draft created">
           Add your registration questions and fees, then publish when you are ready.
           Nothing is public yet.
+        </Callout>
+      )}
+
+      {/*
+        Confirms the banner actually saved. Without this the only way to tell
+        was to open the editor or the public page, which is how a missing
+        banner reaches participants unnoticed.
+      */}
+      {event.banner ? (
+        <figure className={styles.bannerPreview}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`${apiBase}${event.banner.url}`} alt="" className={styles.bannerImage} />
+          <figcaption className={styles.bannerCaption}>
+            Banner, cropped to 16:9 exactly as participants see it.
+          </figcaption>
+        </figure>
+      ) : can(user, 'cpd.update') && (
+        <Callout tone="info" title="No banner image">
+          This event will show as a plain card in listings and on its own page.{' '}
+          <Link href={`/cpd/${event.id}/edit`}>Add a banner</Link>.
         </Callout>
       )}
 

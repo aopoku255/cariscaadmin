@@ -234,6 +234,101 @@ export interface SessionUser {
   permissions?: string[];
 }
 
+/** One option's tally within a choice question's summary. */
+export interface ResponseOption {
+  value: string;
+  label: string;
+  count: number;
+  /** The option was removed from the form after someone had already picked it. */
+  retired: boolean;
+}
+
+export interface QuestionResponses {
+  id: string;
+  label: string;
+  type: QuestionType;
+  required: boolean;
+  answered: number;
+  skipped: number;
+  /** Choice and checkbox questions. */
+  options?: ResponseOption[];
+  selections?: number;
+  /** Several answers were allowed, so shares are of respondents and exceed 100%. */
+  multiple?: boolean;
+  text?: {
+    samples: string[];
+    truncated: boolean;
+    distinct: number;
+    repeated: { value: string; count: number }[];
+  };
+  number?: {
+    stats: { count: number; min: number; max: number; sum: number; mean: number; median: number } | null;
+    buckets: { label: string; count: number }[];
+  };
+  date?: { buckets: { label: string; count: number }[] };
+  uploaded?: number;
+}
+
+export interface EventResponses {
+  eventId: string;
+  /** Registrations that could have answered — the denominator for every share. */
+  responses: number;
+  questions: QuestionResponses[];
+}
+
+export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+
+/**
+ * A user as the admin console sees them — the same serialiser as SessionUser,
+ * read through /admin/users, where the role and department joins are present.
+ */
+export interface AdminUser extends SessionUser {
+  timezone: string | null;
+  departmentId: string | null;
+  lastLoginAt: string | null;
+  createdAt: string;
+  status: UserStatus;
+  department?: { id: string; name: string; code: string };
+}
+
+export interface Role {
+  id: string;
+  key: string;
+  name: string;
+  description: string | null;
+  isSystem: boolean;
+  permissions: string[];
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  code: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  action: string;
+  resourceType: string;
+  resourceId: string | null;
+  /** id and name are null for system actions and for deleted actors. */
+  actor: { id: string | null; name: string | null; email: string | null };
+  before: unknown;
+  after: unknown;
+  metadata: unknown;
+  ip: string | null;
+  userAgent: string | null;
+  requestId: string | null;
+  createdAt: string;
+}
+
+/** Distinct values behind the audit filters, read from the log itself. */
+export interface AuditFacets {
+  actions: string[];
+  resourceTypes: string[];
+  actors: { id: string; email: string }[];
+}
+
 export type PartnerRole = 'PARTNER' | 'SPONSOR' | 'HOST' | 'FUNDER' | 'ACCREDITOR' | 'SUPPORTER';
 
 export interface Partner {

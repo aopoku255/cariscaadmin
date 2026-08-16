@@ -76,18 +76,53 @@
 .muted { color: var(--color-text-subtle); font-size: var(--text-sm); }
 .questionList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
 .questionRow {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3);
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-3);
   padding: var(--space-3); border: 1px solid var(--color-border);
   border-radius: var(--radius); background: var(--color-surface-sunken);
 }
+/* Lifted and faded while it is the one being moved. */
+.questionRowDragging { opacity: 0.4; }
+/* The gap the card would drop into, drawn on the row it would land above. */
+.questionRowOver { box-shadow: 0 -3px 0 0 var(--color-accent); }
+
+/* Only the handle starts a drag, so text in the inputs stays selectable. */
+.dragHandle {
+  display: grid; place-items: center; align-self: start;
+  width: 24px; height: 32px; cursor: grab;
+  background: none; border: none; padding: 0;
+  color: var(--color-text-subtle); line-height: 1;
+}
+.dragHandle:active { cursor: grabbing; }
+.dragHandle:hover { color: var(--color-text); }
+.dragHandle:focus-visible { outline: 2px solid var(--color-accent); border-radius: var(--radius-sm); }
 .questionMain { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
 .questionMeta { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
 .questionMeta select { max-width: 240px; }
 .requiredToggle { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); cursor: pointer; }
 .requiredToggle input { width: 16px; height: 16px; accent-color: var(--color-accent); }
-.options { display: flex; flex-direction: column; gap: var(--space-1); }
+.options { display: flex; flex-direction: column; gap: var(--space-2); }
 .optionsLabel { font-size: var(--text-xs); color: var(--color-text-subtle); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 .optionsWarning { font-size: var(--text-sm); color: var(--color-warning); font-weight: 600; }
+
+/* One input per option, the way Google Forms does it. A single textarea split
+   on newlines cannot work here: the split-and-filter round trip eats the
+   newline the moment you press Enter, so a second option can never be typed. */
+.optionRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-2); align-items: center; }
+/* The bullet or box the participant will actually see. */
+.optionMarker { width: 14px; height: 14px; border: 2px solid var(--color-border-strong); flex: none; }
+.optionMarkerRound { border-radius: 50%; }
+.optionMarkerSquare { border-radius: 3px; }
+.optionRemove {
+  background: none; border: none; cursor: pointer; padding: 0 var(--space-1);
+  color: var(--color-text-subtle); font-size: var(--text-md); line-height: 1;
+}
+.optionRemove:hover { color: var(--color-danger); }
+.optionRemove:disabled { opacity: 0.3; cursor: not-allowed; }
+.addOption {
+  background: none; border: none; padding: 0; cursor: pointer; align-self: flex-start;
+  color: var(--color-accent-text); font-size: var(--text-sm); font-weight: 600;
+}
+.addOption:hover { text-decoration: underline; }
 .questionActions { display: flex; flex-direction: column; gap: var(--space-1); align-items: flex-end; }
 .iconButton {
   background: var(--color-surface); border: 1px solid var(--color-border-strong);
@@ -164,6 +199,23 @@
 }
 .priceAddButtons { display: flex; gap: var(--space-2); }
 .amountCell { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* The saved banner, so an admin can see the event has one without opening the
+   editor or the public page. Same 16:9 crop the participant gets. */
+.bannerPreview { margin: 0 0 var(--space-5); max-width: 720px; }
+.bannerImage {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+  display: block;
+}
+.bannerCaption {
+  font-size: var(--text-sm);
+  color: var(--color-text-subtle);
+  margin-top: var(--space-2);
+}
 
 @media (max-width: 720px) {
   .priceMain { grid-template-columns: minmax(0, 1fr); }
