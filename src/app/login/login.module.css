@@ -1,14 +1,32 @@
 /* Signed out, the console shows its own face: navy ground, no sidebar. */
 .page {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--space-5);
   background: var(--carisca-navy);
+  overflow: hidden;
+}
+
+/*
+ * Two soft brand-coloured washes behind the panel. Purely atmosphere — the
+ * page reads identically without them, which is what happens on a browser
+ * that does not support radial-gradient.
+ */
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60ch 40ch at 18% 12%, rgb(52 203 247 / 18%), transparent 70%),
+    radial-gradient(70ch 46ch at 88% 92%, rgb(15 59 143 / 55%), transparent 70%);
+  pointer-events: none;
 }
 
 .panel {
+  position: relative;
   width: 100%;
   max-width: 400px;
   background: var(--color-surface);
@@ -20,10 +38,26 @@
   gap: var(--space-4);
 }
 
-.brand { padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border); }
+.brand {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border);
+}
+/* The same mark the sidebar wears, so signing in and being signed in look
+   like the same product. */
+.brandBadge {
+  flex: none;
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  border-radius: var(--radius);
+  background: var(--carisca-blue);
+  color: #fff;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--text-xl);
+}
 .brandMark {
   display: block; font-family: var(--font-heading); font-weight: 700;
-  font-size: var(--text-xl); letter-spacing: 0.05em; color: var(--color-accent-text);
+  font-size: var(--text-lg); letter-spacing: 0.05em; color: var(--color-accent-text);
 }
 .brandSub { display: block; font-size: var(--text-xs); color: var(--color-text-subtle); letter-spacing: 0.04em; }
 

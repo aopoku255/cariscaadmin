@@ -91,7 +91,7 @@ export function Field({
         {required && <span className="visually-hidden"> (required)</span>}
       </label>
       {hint && <p className={styles.hint} id={hintId}>{hint}</p>}
-      <div aria-describedby={[hintId, errorId].filter(Boolean).join(' ') || undefined}>
+      <div className={styles.control} aria-describedby={[hintId, errorId].filter(Boolean).join(' ') || undefined}>
         {children}
       </div>
       {error && <p className={styles.error} id={errorId} role="alert">{error}</p>}

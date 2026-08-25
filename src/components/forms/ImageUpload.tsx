@@ -19,6 +19,8 @@ export function ImageUpload({
   label = 'Banner image',
   hint,
   apiBase,
+  onChange,
+  aspectRatio = '16 / 9',
 }: {
   name: string;
   purpose?: string;
@@ -26,11 +28,28 @@ export function ImageUpload({
   label?: string;
   hint?: string;
   apiBase: string;
+  /**
+   * For a caller that already tracks this image as part of its own state
+   * (SpeakersEditor's per-row `rows`, replacing the whole list on save)
+   * rather than reading the hidden input from raw form data. The hidden
+   * input is still rendered either way, so a plain form still works without
+   * this prop.
+   */
+  onChange?: (file: { id: string; url: string } | null) => void;
+  /** A CSS aspect-ratio value. Default matches a banner; pass '1 / 1' for a
+      headshot, so the preview crops the same way the image is used elsewhere
+      instead of always letterboxing to widescreen. */
+  aspectRatio?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<{ id: string; url: string } | null>(initial);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const set = (next: { id: string; url: string } | null) => {
+    setFile(next);
+    onChange?.(next);
+  };
 
   const choose = (chosen: File | undefined) => {
     if (!chosen) return;
@@ -50,7 +69,7 @@ export function ImageUpload({
     startTransition(async () => {
       const result = await uploadFileAction(form);
       if (result.ok && result.file) {
-        setFile({ id: result.file.id, url: result.file.url });
+        set({ id: result.file.id, url: result.file.url });
       } else {
         setError(result.message ?? 'The upload failed.');
       }
@@ -59,7 +78,7 @@ export function ImageUpload({
 
   return (
     <div className={styles.wrap}>
-      <span className={styles.label}>{label}</span>
+      {label && <span className={styles.label}>{label}</span>}
       {hint && <p className={styles.hint}>{hint}</p>}
 
       {/* What the form actually submits. */}
@@ -68,14 +87,14 @@ export function ImageUpload({
       {file ? (
         <div className={styles.preview}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${apiBase}${file.url}`} alt="" className={styles.image} />
+          <img src={`${apiBase}${file.url}`} alt="" className={styles.image} style={{ aspectRatio }} />
           <div className={styles.previewActions}>
             <Button type="button" variant="secondary" size="sm" disabled={pending}
               onClick={() => inputRef.current?.click()}>
               Replace
             </Button>
             <Button type="button" variant="ghost" size="sm" disabled={pending}
-              onClick={() => { setFile(null); setError(null); }}>
+              onClick={() => { set(null); setError(null); }}>
               Remove
             </Button>
           </div>

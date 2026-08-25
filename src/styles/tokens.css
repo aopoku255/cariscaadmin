@@ -90,6 +90,33 @@
   --shell-narrow: 720px;
 
   --ring: 0 0 0 3px rgb(15 59 143 / 25%);
+
+  /* --- console shell ----------------------------------------------------
+   * The sidebar's width is a token rather than a fixed value in two places
+   * because both the grid column and the mobile drawer's transform read it.
+   * Collapsing swaps this one number; nothing else in the layout changes.
+   */
+  --sidebar-w: 248px;
+  --sidebar-w-collapsed: 68px;
+  --topbar-h: 60px;
+
+  /* Navy is the sidebar's own surface, so it carries its own scale rather
+     than borrowing the light-surface tokens, which are unreadable on it. */
+  --nav-fg: #c2d0ea;
+  --nav-fg-strong: #ffffff;
+  --nav-fg-dim: #8fa5cf;
+  --nav-hover: rgb(255 255 255 / 8%);
+  --nav-active: rgb(255 255 255 / 12%);
+  --nav-rule: rgb(255 255 255 / 10%);
+
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur: 180ms;
+}
+
+/* Motion is decoration here — every transition below is a nicety, never the
+   only signal that something changed. */
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur: 0ms; }
 }
 
 /**

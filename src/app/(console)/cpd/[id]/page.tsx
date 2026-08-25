@@ -13,6 +13,7 @@ import { LifecycleControls } from './LifecycleControls';
 import { QuestionsEditor } from './QuestionsEditor';
 import { EventPartners } from './EventPartners';
 import { PricesEditor } from './PricesEditor';
+import { SpeakersEditor } from './SpeakersEditor';
 import styles from '../cpd.module.css';
 import admin from '../../admin.module.css';
 
@@ -219,6 +220,16 @@ export default async function AdminEventPage({
               prices={event.prices ?? []}
               currencies={currencies}
               canEdit={can(user, 'cpd.update')}
+            />
+          </Card>
+
+          <Card>
+            <h2 className={styles.cardTitle}>Speakers</h2>
+            <SpeakersEditor
+              eventId={event.id}
+              speakers={event.speakers ?? []}
+              canEdit={can(user, 'cpd.update')}
+              apiBase={apiBase}
             />
           </Card>
 

@@ -18,15 +18,27 @@ export function canAny(user: SessionUser | null, ...permissions: string[]): bool
   return permissions.some((p) => can(user, p));
 }
 
-export interface NavItem { href: string; label: string; permission?: string }
+/**
+ * `icon` names one of the glyphs in components/ui/icons.tsx. It lives here as
+ * a plain string rather than a component so this module stays free of JSX —
+ * it is imported by server code that never renders.
+ */
+export interface NavItem { href: string; label: string; permission?: string; icon: IconKey }
+
+export type IconKey =
+  | 'overview' | 'calendar' | 'clipboard' | 'handshake' | 'shield' | 'users' | 'history';
 
 export const ADMIN_NAV: NavItem[] = [
-  { href: '/', label: 'Overview' },
-  { href: '/cpd', label: 'CPD events', permission: 'cpd.view' },
-  { href: '/registrations', label: 'Registrations', permission: 'cpd.registration.view' },
-  { href: '/partners', label: 'Partners', permission: 'partners.view' },
-  { href: '/users', label: 'Users', permission: 'users.view' },
-  { href: '/audit', label: 'Audit log', permission: 'audit.view' },
+  { href: '/', label: 'Overview', icon: 'overview' },
+  { href: '/cpd', label: 'CPD events', permission: 'cpd.view', icon: 'calendar' },
+  { href: '/registrations', label: 'Registrations', permission: 'cpd.registration.view', icon: 'clipboard' },
+  { href: '/partners', label: 'Partners', permission: 'partners.view', icon: 'handshake' },
+  // Staff and participants are different audiences with different fields and
+  // different volume (a handful of staff against however many people have
+  // registered), so they get separate lists rather than one filtered by kind.
+  { href: '/users', label: 'Staff', permission: 'users.view', icon: 'shield' },
+  { href: '/participants', label: 'Participants', permission: 'users.view', icon: 'users' },
+  { href: '/audit', label: 'Audit log', permission: 'audit.view', icon: 'history' },
 ];
 
 /**

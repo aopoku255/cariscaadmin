@@ -3,16 +3,13 @@ import { notFound, redirect } from 'next/navigation';
 import { requireStaff, can } from '@/lib/auth/require-staff';
 import { apiAsUser } from '@/lib/auth/session';
 import { apiRequest, ApiError } from '@/lib/api/client';
-import type {
-  AdminUser, AuditLogEntry, Department, ReferenceData, Role,
-} from '@/lib/api/types';
+import type { AdminUser, AuditLogEntry, ReferenceData } from '@/lib/api/types';
 import { Badge, Callout } from '@/components/ui';
 import { userStatusLabel, userStatusTone, timestamp, auditActionLabel } from '@/lib/format';
-import { UserForm } from '../UserForm';
-import { RolesPanel } from './RolesPanel';
-import { PasswordPanel } from './PasswordPanel';
+import { UserForm } from '../../users/UserForm';
+import { PasswordPanel } from '../../users/[id]/PasswordPanel';
 import styles from '../../admin.module.css';
-import panel from '../users.module.css';
+import panel from '../../users/users.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,14 +22,14 @@ export async function generateMetadata({ params }: { params: Params }) {
     const { data } = await apiAsUser<AdminUser>(`/admin/users/${id}`);
     return { title: data.fullName };
   } catch {
-    return { title: 'User' };
+    return { title: 'Participant' };
   }
 }
 
-export default async function UserDetailPage({
+export default async function ParticipantDetailPage({
   params, searchParams,
 }: { params: Params; searchParams: SearchParams }) {
-  const viewer = await requireStaff('/users');
+  const viewer = await requireStaff('/participants');
   const { id } = await params;
   const { created, emailSent } = await searchParams;
 
@@ -45,27 +42,19 @@ export default async function UserDetailPage({
     throw err;
   }
 
-  // This page is staff-only; a participant's record lives at /participants/:id
-  // instead, which has no roles or department to show. Redirecting rather than
-  // 404ing means an old bookmark or a stale link still lands somewhere useful.
-  if (!target.isStaff) redirect(`/participants/${id}`);
+  // This page is for participants; a staff record lives at /users/:id, which
+  // shows the department and role editor this page deliberately omits. Ticking
+  // "Staff member" on the form below and saving lands back here with
+  // isStaff now true — updateUserAction revalidates this path too, so the
+  // redirect below picks it up on the very next render and hands off to
+  // /users/:id, where RolesPanel is waiting.
+  if (target.isStaff) redirect(`/users/${id}`);
 
-  const isSelf = String(viewer.id) === String(target.id);
-  const canAssignRoles = can(viewer, 'rbac.manage');
   const canEdit = can(viewer, 'users.update');
 
-  const [roles, departments, countries, history] = await Promise.all([
-    canAssignRoles
-      ? apiAsUser<Role[]>('/admin/roles').then((r) => r.data ?? []).catch(() => [])
-      : Promise.resolve<Role[]>([]),
-    canEdit
-      ? apiAsUser<Department[]>('/admin/departments').then((r) => r.data ?? []).catch(() => [])
-      : Promise.resolve<Department[]>([]),
+  const [countries, history] = await Promise.all([
     apiRequest<ReferenceData>('/reference', { revalidate: 3600 })
       .then((r) => r.data.countries).catch(() => []),
-    // What has been done to this account, from the same log the audit page
-    // reads. Answering "who changed this?" on the record itself beats sending
-    // an administrator off to search for it.
     can(viewer, 'audit.view')
       ? apiAsUser<AuditLogEntry[]>('/admin/audit-logs', {
         query: { resourceType: 'user', q: id, limit: 10 },
@@ -77,7 +66,9 @@ export default async function UserDetailPage({
     <>
       <header className={styles.pageHead}>
         <div>
-          <Link href="/users" style={{ fontSize: 'var(--text-sm)', textDecoration: 'none' }}>← Staff</Link>
+          <Link href="/participants" style={{ fontSize: 'var(--text-sm)', textDecoration: 'none' }}>
+            ← Participants
+          </Link>
           <h1 className={styles.pageTitle}>{target.displayName || target.fullName}</h1>
           <p className={styles.pageSub}>{target.email}</p>
         </div>
@@ -105,11 +96,12 @@ export default async function UserDetailPage({
           {canEdit ? (
             <UserForm
               user={target}
-              roles={roles}
-              departments={departments}
               countries={countries}
               canSetStatus={can(viewer, 'users.deactivate')}
-              canAssignRoles={canAssignRoles}
+              // Roles never render in edit mode regardless — UserForm only
+              // offers them at creation, staff get theirs from RolesPanel on
+              // /users/:id once promoted. Nothing to wire up here.
+              canAssignRoles={false}
             />
           ) : (
             <section className={panel.panel}>
@@ -120,12 +112,12 @@ export default async function UserDetailPage({
                   <dd className={panel.factValue}>{target.organization ?? '-'}</dd>
                 </div>
                 <div className={panel.factRow}>
-                  <dt className={panel.factLabel}>Job title</dt>
-                  <dd className={panel.factValue}>{target.jobTitle ?? '-'}</dd>
-                </div>
-                <div className={panel.factRow}>
                   <dt className={panel.factLabel}>Phone</dt>
                   <dd className={panel.factValue}>{target.phone ?? '-'}</dd>
+                </div>
+                <div className={panel.factRow}>
+                  <dt className={panel.factLabel}>Country</dt>
+                  <dd className={panel.factValue}>{target.countryCode ?? '-'}</dd>
                 </div>
               </dl>
               <p className={panel.panelNote}>
@@ -140,14 +132,8 @@ export default async function UserDetailPage({
             <h2 className={panel.panelTitle}>Account</h2>
             <dl className={panel.facts}>
               <div className={panel.factRow}>
-                <dt className={panel.factLabel}>Department</dt>
-                <dd className={panel.factValue}>{target.department?.name ?? 'Not set'}</dd>
-              </div>
-              <div className={panel.factRow}>
-                <dt className={panel.factLabel}>Roles</dt>
-                <dd className={panel.factValue}>
-                  {target.roles?.map((r) => r.name).join(', ') || 'None'}
-                </dd>
+                <dt className={panel.factLabel}>Organization</dt>
+                <dd className={panel.factValue}>{target.organization ?? 'Not set'}</dd>
               </div>
               <div className={panel.factRow}>
                 <dt className={panel.factLabel}>Last signed in</dt>
@@ -162,11 +148,7 @@ export default async function UserDetailPage({
             </dl>
           </section>
 
-          {canAssignRoles && (
-            <RolesPanel user={target} roles={roles} isSelf={isSelf} />
-          )}
-
-          {canEdit && !isSelf && (
+          {canEdit && (
             <PasswordPanel userId={target.id} name={target.firstName} />
           )}
 

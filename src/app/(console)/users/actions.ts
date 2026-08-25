@@ -49,8 +49,10 @@ export async function createUserAction(
 ): Promise<AdminActionState> {
   let id: string;
 
+  let welcomeEmailSent = false;
+
   try {
-    const { data } = await apiAsUser<AdminUser>('/admin/users', {
+    const { data } = await apiAsUser<AdminUser & { welcomeEmailSent: boolean }>('/admin/users', {
       method: 'POST',
       body: {
         ...profile(formData),
@@ -60,6 +62,7 @@ export async function createUserAction(
       },
     });
     id = data.id;
+    welcomeEmailSent = data.welcomeEmailSent;
   } catch (err) {
     return toState(err);
   }
@@ -67,7 +70,7 @@ export async function createUserAction(
   revalidatePath('/users');
   // Straight to the new record: the next thing an administrator does is check
   // it, and a "created" banner on a list of fifty rows does not show them what.
-  redirect(`/users/${id}?created=1`);
+  redirect(`/users/${id}?created=1&emailSent=${welcomeEmailSent ? '1' : '0'}`);
 }
 
 export async function updateUserAction(
@@ -88,8 +91,17 @@ export async function updateUserAction(
     return toState(err);
   }
 
+  // This action edits both staff and participants — UserForm is shared, see
+  // its own comment — so it revalidates both sides rather than knowing which
+  // one it was called from. That matters most when the edit just flipped
+  // `isStaff`: it is what lets the still-mounted /participants/:id page
+  // notice on its next render that the account is now staff and hand off to
+  // /users/:id, instead of continuing to show a staff-shaped record on the
+  // participant page.
   revalidatePath('/users');
   revalidatePath(`/users/${id}`);
+  revalidatePath('/participants');
+  revalidatePath(`/participants/${id}`);
   return { ok: true, message: 'Saved.' };
 }
 

@@ -8,6 +8,7 @@ import {
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import type { AdminUser, Department, Role, ReferenceData } from '@/lib/api/types';
 import { createUserAction, updateUserAction } from './actions';
+import { createParticipantAction } from '../participants/actions';
 import { emptyAdminState } from '../cpd/state';
 import styles from './users.module.css';
 
@@ -17,34 +18,51 @@ const TIMEZONES = [
 ];
 
 /**
- * One form for creating and editing.
+ * One form for creating and editing both staff and participants.
+ *
+ * Which kind an account is decides which fields appear: department and roles
+ * are a staff concept and never show for a participant. What decides "which
+ * kind" differs by mode, deliberately:
+ *
+ * - Creating: fixed by the page you're on (`createAsStaff`), not a toggle in
+ *   the form. /users/new and /participants/new are separate entry points so
+ *   an admin never has to pick a kind from a shared, ambiguous control — the
+ *   thing this replaced.
+ * - Editing: a real toggle, because moving an existing person between the two
+ *   is a legitimate, occasional action and the record already has a settled
+ *   identity to change.
  *
  * Email and password appear only when creating: changing an address has to
  * re-verify it, which is its own flow, and setting a password is a separate,
  * deliberately noisier action on the detail page.
  */
 export function UserForm({
-  user, roles, departments, countries, canSetStatus, canAssignRoles,
+  user, roles = [], departments = [], countries, canSetStatus, canAssignRoles, createAsStaff = false,
 }: {
   user?: AdminUser;
-  roles: Role[];
-  departments: Department[];
+  roles?: Role[];
+  departments?: Department[];
   countries: ReferenceData['countries'];
   canSetStatus: boolean;
   canAssignRoles: boolean;
+  /** Ignored when editing `user`, where the toggle below decides it instead. */
+  createAsStaff?: boolean;
 }) {
+  const createAction = createAsStaff ? createUserAction : createParticipantAction;
   const [state, formAction] = useActionState(
-    user ? updateUserAction : createUserAction,
+    user ? updateUserAction : createAction,
     emptyAdminState,
   );
 
   const assigned = new Set(user?.roles?.map((r) => r.key) ?? []);
-  const [staffChecked, setStaffChecked] = useState(user?.isStaff ?? false);
+  const [staffChecked, setStaffChecked] = useState(user ? user.isStaff : createAsStaff);
   const err = (k: string) => state.fieldErrors?.[k];
 
   return (
     <form action={formAction} className={styles.form}>
       {user && <input type="hidden" name="id" value={user.id} />}
+      {/* Creating: the kind is fixed by which page this is, not user input. */}
+      {!user && createAsStaff && <input type="hidden" name="isStaff" value="on" />}
 
       {state.message && (
         <Callout tone={state.ok ? 'success' : 'danger'} title={state.ok ? undefined : 'Could not save'}>
@@ -104,8 +122,11 @@ export function UserForm({
         <fieldset className={styles.group}>
           <legend className={styles.groupTitle}>Their first password</legend>
           <p className={styles.groupNote}>
-            You set this and pass it on to them yourself — there is no invitation
-            email yet. Ask them to change it from their profile once they are in.
+            This is emailed to them along with their sign-in link, so it&apos;s
+            worth setting something you&apos;re comfortable being sent in
+            plain text. Ask them to change it from their profile once they
+            are in — and if the email happens to bounce, you can still read
+            this back to them yourself.
           </p>
 
           <Field label="Password" htmlFor="password" error={err('password')} required
@@ -145,30 +166,42 @@ export function UserForm({
           </Field>
         </div>
 
-        <Field label="CARISCA department" htmlFor="departmentId" error={err('departmentId')}
-          hint="For staff. Leave unset for external participants.">
-          <select id="departmentId" name="departmentId" className={selectClass}
-            defaultValue={user?.departmentId ?? ''}>
-            <option value="">Not set</option>
-            {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-          </select>
-        </Field>
+        {/* A department is a staff concept — a participant does not have one
+            at CARISCA, so this only ever appears alongside the staff toggle. */}
+        {staffChecked && (
+          <Field label="CARISCA department" htmlFor="departmentId" error={err('departmentId')}>
+            <select id="departmentId" name="departmentId" className={selectClass}
+              defaultValue={user?.departmentId ?? ''}>
+              <option value="">Not set</option>
+              {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+          </Field>
+        )}
       </fieldset>
 
       <fieldset className={styles.group}>
         <legend className={styles.groupTitle}>Access</legend>
 
-        <label className={checkRowClass}>
-          <input type="checkbox" name="isStaff" checked={staffChecked}
-            onChange={(e) => setStaffChecked(e.target.checked)} />
-          <span>
-            Staff member
-            <span className={styles.groupNote} style={{ display: 'block' }}>
-              Staff can open this admin console. Their role decides what they
-              can actually do once inside.
+        {user ? (
+          <label className={checkRowClass}>
+            <input type="checkbox" name="isStaff" checked={staffChecked}
+              onChange={(e) => setStaffChecked(e.target.checked)} />
+            <span>
+              Staff member
+              <span className={styles.groupNote} style={{ display: 'block' }}>
+                Staff can open this admin console. Untick to remove that
+                access — they will remain a participant, and keep signing in
+                to the public site as they always have.
+              </span>
             </span>
-          </span>
-        </label>
+          </label>
+        ) : (
+          <p className={styles.groupNote}>
+            {createAsStaff
+              ? 'This account will be able to sign in to this console.'
+              : 'This is a participant account — no console access. Roles are only for staff, and are assigned after their account is created if it later becomes one.'}
+          </p>
+        )}
 
         {canSetStatus && user && (
           <Field label="Account status" htmlFor="status" error={err('status')}
@@ -182,15 +215,13 @@ export function UserForm({
         )}
 
         {/*
-          Roles are part of creation but a separate action afterwards: changing
-          someone's authority mid-way through a profile edit should be its own
-          decision, with its own audit entry.
+          Roles are part of creating a staff account but a separate action
+          afterwards on any existing account: changing someone's authority
+          mid-way through a profile edit should be its own decision, with its
+          own audit entry (see RolesPanel on the detail page).
         */}
-        {!user && canAssignRoles && (
-          <Field label="Roles" htmlFor="roleKeys"
-            hint={staffChecked
-              ? 'Pick what they need and nothing more.'
-              : 'Participants need no role. Leave these unticked unless they are staff.'}>
+        {!user && staffChecked && canAssignRoles && (
+          <Field label="Roles" htmlFor="roleKeys" hint="Pick what they need and nothing more.">
             <div className={styles.roleList} id="roleKeys">
               {roles.map((r) => (
                 <label key={r.key} className={styles.roleOption}>
@@ -214,7 +245,11 @@ export function UserForm({
         <SubmitButton pendingLabel={user ? 'Saving…' : 'Creating…'}>
           {user ? 'Save changes' : 'Create account'}
         </SubmitButton>
-        <Link href={user ? `/users/${user.id}` : '/users'}>Cancel</Link>
+        <Link href={user
+          ? `/${user.isStaff ? 'users' : 'participants'}/${user.id}`
+          : `/${createAsStaff ? 'users' : 'participants'}`}>
+          Cancel
+        </Link>
       </div>
     </form>
   );

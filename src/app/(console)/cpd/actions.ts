@@ -186,6 +186,29 @@ export async function saveQuestionsAction(
   return { ok: true, message: 'Registration questions saved.' };
 }
 
+/** Replaces the whole speaker list in one call, matching prices and questions. */
+export async function saveSpeakersAction(
+  _prev: AdminActionState, formData: FormData,
+): Promise<AdminActionState> {
+  const id = String(formData.get('id'));
+
+  let speakers: unknown;
+  try {
+    speakers = JSON.parse(String(formData.get('speakers') || '[]'));
+  } catch {
+    return { ok: false, message: 'The speaker list could not be read. Please reload and try again.' };
+  }
+
+  try {
+    await apiAsUser(`/cpd/events/${id}/speakers`, { method: 'PUT', body: { speakers } });
+  } catch (err) {
+    return toState(err);
+  }
+
+  revalidatePath(`/cpd/${id}`);
+  return { ok: true, message: 'Speakers saved.' };
+}
+
 export async function savePricesAction(
   _prev: AdminActionState, formData: FormData,
 ): Promise<AdminActionState> {

@@ -20,8 +20,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
     <div className={styles.page}>
       <div className={styles.panel}>
         <div className={styles.brand}>
-          <span className={styles.brandMark}>CARISCA</span>
-          <span className={styles.brandSub}>Administration</span>
+          <span className={styles.brandBadge} aria-hidden="true">C</span>
+          <span>
+            <span className={styles.brandMark}>CARISCA</span>
+            <span className={styles.brandSub}>Administration</span>
+          </span>
         </div>
 
         <h1 className={styles.title}>Staff sign in</h1>

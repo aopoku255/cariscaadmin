@@ -1,41 +1,39 @@
 import Link from 'next/link';
 import { requireStaff, can } from '@/lib/auth/require-staff';
 import { apiAsUser } from '@/lib/auth/session';
-import type { AdminUser, Role, PageMeta } from '@/lib/api/types';
+import type { AdminUser, PageMeta } from '@/lib/api/types';
 import { Badge, EmptyState, Callout, ButtonLink } from '@/components/ui';
 import { userStatusLabel, userStatusTone, dateOnly, timestamp } from '@/lib/format';
 import styles from '../admin.module.css';
 
-export const metadata = { title: 'Staff' };
+export const metadata = { title: 'Participants' };
 export const dynamic = 'force-dynamic';
 
-type SearchParams = Promise<{
-  q?: string; status?: string; role?: string; page?: string;
-}>;
+type SearchParams = Promise<{ q?: string; status?: string; page?: string }>;
 
 function withParams(base: Record<string, string | undefined>, overrides: Record<string, string | number>) {
   const q = new URLSearchParams();
   for (const [k, v] of Object.entries({ ...base, ...overrides })) {
     if (v !== undefined && v !== '') q.set(k, String(v));
   }
-  return `/users?${q.toString()}`;
+  return `/participants?${q.toString()}`;
 }
 
 /**
- * Everyone who can sign in to this console.
+ * Everyone registered as a member of the public, not staff.
  *
- * Kept apart from /participants rather than filtered from one shared list:
- * staff carry roles and a department that a participant never has, and a
- * console with a thousand registrants in it would bury the dozen people who
- * actually work here. `isStaff` is fixed to true here — never taken from the
- * query string — so this page can never accidentally render participants.
+ * Kept apart from /users rather than filtered from one shared list: this is
+ * the list that actually grows — every registration adds to it — and it has
+ * no roles or department to show, just who they are and where they are from.
+ * `isStaff` is fixed to false here, never taken from the query string, so a
+ * staff account can never surface on this page.
  */
-export default async function UsersPage({ searchParams }: { searchParams: SearchParams }) {
-  const user = await requireStaff('/users');
+export default async function ParticipantsPage({ searchParams }: { searchParams: SearchParams }) {
+  const user = await requireStaff('/participants');
   const params = await searchParams;
   const page = Number(params.page ?? '1') || 1;
 
-  let staff: AdminUser[] = [];
+  let participants: AdminUser[] = [];
   let meta: PageMeta | undefined;
   let failed = false;
 
@@ -44,31 +42,20 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
       query: {
         q: params.q,
         status: params.status,
-        role: params.role,
-        isStaff: 'true',
+        isStaff: 'false',
         page,
         limit: 50,
         sort: 'created_at',
         order: 'desc',
       },
     });
-    staff = result.data ?? [];
+    participants = result.data ?? [];
     meta = (result as { meta?: PageMeta }).meta;
   } catch {
     failed = true;
   }
 
-  // Powers the role filter. Only visible to people who can read RBAC; for
-  // everyone else the filter degrades to search and status.
-  let roles: Role[] = [];
-  if (can(user, 'rbac.view')) {
-    try {
-      const { data } = await apiAsUser<Role[]>('/admin/roles');
-      roles = data ?? [];
-    } catch { /* the filter is simply not offered */ }
-  }
-
-  const filterState = { q: params.q, status: params.status, role: params.role };
+  const filterState = { q: params.q, status: params.status };
   const filtered = Object.values(filterState).some(Boolean);
 
   const control = {
@@ -82,19 +69,19 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
     <>
       <header className={styles.pageHead}>
         <div>
-          <h1 className={styles.pageTitle}>Staff</h1>
+          <h1 className={styles.pageTitle}>Participants</h1>
           <p className={styles.pageSub}>
-            {meta ? `${meta.total} staff account${meta.total === 1 ? '' : 's'}` : 'Everyone who can sign in to this console'}
+            {meta ? `${meta.total} participant${meta.total === 1 ? '' : 's'}` : 'Everyone registered with CARISCA'}
           </p>
         </div>
         {can(user, 'users.create') && (
           <div className={styles.pageActions}>
-            <ButtonLink href="/users/new">Add staff</ButtonLink>
+            <ButtonLink href="/participants/new">Add a participant</ButtonLink>
           </div>
         )}
       </header>
 
-      {failed && <Callout tone="danger" title="We could not load staff">Try refreshing.</Callout>}
+      {failed && <Callout tone="danger" title="We could not load participants">Try refreshing.</Callout>}
 
       <form className={styles.filters} method="get">
         <div className={`${styles.filterField} ${styles.grow}`}>
@@ -114,16 +101,6 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
           </select>
         </div>
 
-        {roles.length > 0 && (
-          <div className={styles.filterField}>
-            <label className={styles.filterLabel} htmlFor="role">Role</label>
-            <select id="role" name="role" defaultValue={params.role ?? ''} style={control}>
-              <option value="">Any</option>
-              {roles.map((r) => <option key={r.key} value={r.key}>{r.name}</option>)}
-            </select>
-          </div>
-        )}
-
         <button type="submit" style={{
           padding: '9px 18px', borderRadius: 'var(--radius)', border: 'none',
           background: 'var(--color-accent)', color: '#fff', fontWeight: 600,
@@ -131,19 +108,19 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
         }}>
           Apply
         </button>
-        {filtered && <Link href="/users" style={{ alignSelf: 'center', fontSize: 'var(--text-sm)' }}>Clear</Link>}
+        {filtered && <Link href="/participants" style={{ alignSelf: 'center', fontSize: 'var(--text-sm)' }}>Clear</Link>}
       </form>
 
-      {staff.length === 0 ? (
+      {participants.length === 0 ? (
         <EmptyState
-          title={filtered ? 'Nobody matches those filters' : 'No staff yet'}
+          title={filtered ? 'Nobody matches those filters' : 'No participants yet'}
           description={filtered
             ? 'Try a broader search, or clear the filters.'
-            : 'Add the people who need to work in this console.'}
+            : 'Accounts appear here as people register for an event, or when you add one yourself.'}
           action={filtered
-            ? <ButtonLink href="/users" variant="secondary">Clear filters</ButtonLink>
+            ? <ButtonLink href="/participants" variant="secondary">Clear filters</ButtonLink>
             : can(user, 'users.create')
-              ? <ButtonLink href="/users/new">Add staff</ButtonLink>
+              ? <ButtonLink href="/participants/new">Add a participant</ButtonLink>
               : undefined}
         />
       ) : (
@@ -153,33 +130,29 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
               <thead>
                 <tr>
                   <th scope="col">Name</th>
-                  <th scope="col">Roles</th>
-                  <th scope="col">Department</th>
+                  <th scope="col">Organization</th>
+                  <th scope="col">Country</th>
                   <th scope="col">Status</th>
                   <th scope="col">Last signed in</th>
                   <th scope="col">Added</th>
                 </tr>
               </thead>
               <tbody>
-                {staff.map((u) => (
-                  <tr key={u.id}>
+                {participants.map((p) => (
+                  <tr key={p.id}>
                     <td>
-                      <Link href={`/users/${u.id}`}><strong>{u.fullName}</strong></Link>
+                      <Link href={`/participants/${p.id}`}><strong>{p.fullName}</strong></Link>
                       <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-subtle)' }}>
-                        {u.email}
+                        {p.email}
                       </div>
                     </td>
-                    <td>
-                      {u.roles?.length
-                        ? u.roles.map((r) => r.name).join(', ')
-                        : <span style={{ color: 'var(--color-text-subtle)' }}>None</span>}
-                    </td>
-                    <td>{u.department?.name ?? '-'}</td>
-                    <td><Badge tone={userStatusTone[u.status]}>{userStatusLabel[u.status]}</Badge></td>
+                    <td>{p.organization ?? '-'}</td>
+                    <td>{p.countryCode ?? '-'}</td>
+                    <td><Badge tone={userStatusTone[p.status]}>{userStatusLabel[p.status]}</Badge></td>
                     <td className={styles.nowrap}>
-                      {u.lastLoginAt ? timestamp(u.lastLoginAt) : 'Never'}
+                      {p.lastLoginAt ? timestamp(p.lastLoginAt) : 'Never'}
                     </td>
-                    <td className={styles.nowrap}>{dateOnly(u.createdAt)}</td>
+                    <td className={styles.nowrap}>{dateOnly(p.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -189,7 +162,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Search
           {meta && meta.totalPages > 1 && (
             <nav className={styles.pager} aria-label="Pagination">
               <span className={styles.pagerInfo}>
-                Page {meta.page} of {meta.totalPages} · {meta.total} staff
+                Page {meta.page} of {meta.totalPages} · {meta.total} participants
               </span>
               <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 {meta.hasPrevious && (

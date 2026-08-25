@@ -7,7 +7,7 @@ import type { Department, ReferenceData, Role } from '@/lib/api/types';
 import { UserForm } from '../UserForm';
 import styles from '../../admin.module.css';
 
-export const metadata = { title: 'Add a user' };
+export const metadata = { title: 'Add staff' };
 export const dynamic = 'force-dynamic';
 
 export default async function NewUserPage() {
@@ -30,8 +30,8 @@ export default async function NewUserPage() {
     <>
       <header className={styles.pageHead}>
         <div>
-          <Link href="/users" style={{ fontSize: 'var(--text-sm)', textDecoration: 'none' }}>← Users</Link>
-          <h1 className={styles.pageTitle}>Add a user</h1>
+          <Link href="/users" style={{ fontSize: 'var(--text-sm)', textDecoration: 'none' }}>← Staff</Link>
+          <h1 className={styles.pageTitle}>Add a staff member</h1>
           <p className={styles.pageSub}>
             The account works straight away. Give them the password yourself.
           </p>
@@ -39,6 +39,7 @@ export default async function NewUserPage() {
       </header>
 
       <UserForm
+        createAsStaff
         roles={roles}
         departments={departments}
         countries={countries}

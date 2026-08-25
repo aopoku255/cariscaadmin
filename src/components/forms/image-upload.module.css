@@ -27,11 +27,10 @@
   background: var(--color-surface);
 }
 
-/* 16:9, matching how the banner is cropped on the public event page — what an
-   admin sees here is what a participant will see. */
+/* Ratio set inline per use — 16:9 for a banner, 1:1 for a headshot — so what
+   an admin sees here matches how the image is actually cropped elsewhere. */
 .image {
   width: 100%;
-  aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: var(--radius);
   background: var(--color-surface-sunken);

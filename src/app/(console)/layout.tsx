@@ -1,10 +1,19 @@
-import Link from 'next/link';
 import { requireStaff, visibleNav } from '@/lib/auth/require-staff';
 import { logoutAction } from '@/lib/auth/actions';
-import { AdminNav } from './AdminNav';
+import { Icon } from '@/components/ui/icons';
+import { ConsoleShell } from './ConsoleShell';
 import styles from './admin.module.css';
 
 export const dynamic = 'force-dynamic';
+
+/** "Ama Serwaa Boateng" → "AB". Falls back to one letter, or none. */
+function initialsOf(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  const first = parts[0][0] ?? '';
+  const last = parts.length > 1 ? parts[parts.length - 1][0] ?? '' : '';
+  return (first + last).toUpperCase();
+}
 
 /**
  * The console shell.
@@ -12,44 +21,37 @@ export const dynamic = 'force-dynamic';
  * Guards everything beneath it: anyone who is not signed-in staff is sent
  * away before a page renders. This is convenience, not security — the API
  * refuses every action independently on its own permission check.
+ *
+ * The chrome itself lives in ConsoleShell, a client component, because the
+ * sidebar collapses and that state belongs in the browser. Everything the
+ * shell needs about the viewer is resolved here and handed down, so the
+ * client half never fetches or re-derives it.
  */
 export default async function ConsoleLayout({ children }: { children: React.ReactNode }) {
   const user = await requireStaff();
   const nav = visibleNav(user);
 
+  const signOut = (
+    <form action={logoutAction}>
+      <button type="submit" className={styles.signOut} title="Sign out">
+        <Icon name="logout" size={16} />
+        <span className={styles.navLabel}>Sign out</span>
+      </button>
+    </form>
+  );
+
   return (
-    <div className={styles.shell}>
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHead}>
-          <Link href="/" className={styles.brand}>
-            <span className={styles.brandMark}>CARISCA</span>
-            <span className={styles.brandSub}>Administration</span>
-          </Link>
-        </div>
-
-        <AdminNav items={nav} />
-
-        <div className={styles.sidebarFoot}>
-          <p className={styles.who}>{user.fullName}</p>
-          <p className={styles.role}>
-            {user.roles?.map((r) => r.name).join(', ') || 'Staff'}
-          </p>
-          <div className={styles.footLinks}>
-            <a
-              href={process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}
-              target="_blank"
-              rel="noreferrer"
-            >
-              View the public site
-            </a>
-            <form action={logoutAction}>
-              <button type="submit" className={styles.signOut}>Sign out</button>
-            </form>
-          </div>
-        </div>
-      </aside>
-
-      <main id="main" className={styles.content}>{children}</main>
-    </div>
+    <ConsoleShell
+      nav={nav}
+      user={{
+        fullName: user.fullName,
+        initials: initialsOf(user.fullName || user.email || ''),
+        roles: user.roles?.map((r) => r.name).join(', ') || 'Staff',
+      }}
+      siteUrl={process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}
+      signOut={signOut}
+    >
+      {children}
+    </ConsoleShell>
   );
 }

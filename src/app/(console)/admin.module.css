@@ -1,64 +1,227 @@
 /* The admin console is a tool, not a document: dense, scannable, no hero. */
 .shell {
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
   min-height: 100vh;
   background: var(--color-bg);
+  transition: grid-template-columns var(--dur) var(--ease);
+}
+
+/* Collapsed is a rail: icons only, labels gone, same order and position so
+   nothing has to be re-learned when it is folded away. */
+:global(html[data-sidebar='collapsed']) .shell {
+  grid-template-columns: var(--sidebar-w-collapsed) minmax(0, 1fr);
 }
 
 .sidebar {
-  background: var(--carisca-navy);
-  color: #dbe4f5;
+  background: linear-gradient(180deg, var(--carisca-navy) 0%, #071e4a 100%);
+  color: var(--nav-fg);
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden auto;
+  overflow-x: hidden;
+  z-index: 30;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 20%) transparent;
 }
 
-.sidebarHead { padding: var(--space-5) var(--space-4) var(--space-4); border-bottom: 1px solid rgb(255 255 255 / 10%); }
-.brand { text-decoration: none; display: block; }
+.sidebarHead {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--nav-rule);
+  min-height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+}
+.brand {
+  text-decoration: none; display: flex; align-items: center;
+  gap: var(--space-3); min-width: 0;
+}
+.brandBadge {
+  flex: none;
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: var(--radius);
+  background: var(--carisca-cyan);
+  color: #062045;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--text-lg);
+}
+.brandText { min-width: 0; }
 .brandMark {
   display: block; font-family: var(--font-heading); font-weight: 700;
-  font-size: var(--text-lg); letter-spacing: 0.05em; color: #fff;
+  font-size: var(--text-md); letter-spacing: 0.05em; color: var(--nav-fg-strong);
+  white-space: nowrap;
 }
-.brandSub { display: block; font-size: var(--text-xs); color: #93a9d4; letter-spacing: 0.04em; }
+.brandSub {
+  display: block; font-size: var(--text-xs); color: var(--nav-fg-dim);
+  letter-spacing: 0.04em; white-space: nowrap;
+}
 
-.nav { display: flex; flex-direction: column; padding: var(--space-3) var(--space-2); gap: 2px; flex: 1; }
+.nav {
+  display: flex; flex-direction: column;
+  padding: var(--space-3) var(--space-2); gap: 2px; flex: 1;
+}
 
 .navItem, .navItemActive {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius);
   text-decoration: none;
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: var(--text-base);
-  border-left: 3px solid transparent;
+  white-space: nowrap;
+  position: relative;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
-.navItem { color: #c2d0ea; }
-.navItem:hover { background: rgb(255 255 255 / 8%); color: #fff; }
-.navItemActive {
-  background: rgb(255 255 255 / 12%);
-  color: #fff;
-  /* The cyan works here — a rule on navy, never text on white. */
-  border-left-color: var(--carisca-cyan);
+.navItem { color: var(--nav-fg); }
+.navItem:hover { background: var(--nav-hover); color: var(--nav-fg-strong); }
+.navItemActive { background: var(--nav-active); color: var(--nav-fg-strong); }
+
+/* The active marker is a pseudo-element rather than a border so the icon
+   does not shift by 3px between states. The cyan works here — a rule on
+   navy, never text on white. */
+.navItemActive::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--space-3) * -1 + 2px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--carisca-cyan);
 }
 
-.sidebarFoot { padding: var(--space-4); border-top: 1px solid rgb(255 255 255 / 10%); }
-.who { font-family: var(--font-heading); font-weight: 600; color: #fff; font-size: var(--text-base); }
-.role { font-size: var(--text-xs); color: #93a9d4; margin-bottom: var(--space-3); }
-.footLinks { display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
-.footLinks a { color: #c2d0ea; text-decoration: none; }
-.footLinks a:hover { color: #fff; text-decoration: underline; }
-.signOut {
-  background: none; border: none; padding: 0; cursor: pointer; text-align: left;
-  color: #c2d0ea; font-size: var(--text-sm); text-decoration: underline; font-family: inherit;
-}
-.signOut:hover { color: #fff; }
+.navIcon { flex: none; }
+.navLabel { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
-.content { padding: var(--space-6); min-width: 0; }
+.sidebarFoot { padding: var(--space-3); border-top: 1px solid var(--nav-rule); }
+
+.who {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-3);
+  min-width: 0;
+}
+.avatar {
+  flex: none;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 14%);
+  color: var(--nav-fg-strong);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  letter-spacing: 0.02em;
+}
+.whoText { min-width: 0; }
+.whoName {
+  display: block; font-family: var(--font-heading); font-weight: 600;
+  color: var(--nav-fg-strong); font-size: var(--text-base);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.whoRole {
+  display: block; font-size: var(--text-xs); color: var(--nav-fg-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.footLinks { display: flex; flex-direction: column; gap: 2px; font-size: var(--text-sm); }
+.footLinks a, .signOut {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  color: var(--nav-fg); text-decoration: none;
+  font-size: var(--text-sm); font-family: inherit;
+  white-space: nowrap;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.footLinks a:hover, .signOut:hover { background: var(--nav-hover); color: var(--nav-fg-strong); }
+.signOut { background: none; border: none; cursor: pointer; width: 100%; text-align: left; }
+.footLinks form { display: contents; }
+
+/* --- collapsed rail ------------------------------------------------------- */
+:global(html[data-sidebar='collapsed']) .brandText,
+:global(html[data-sidebar='collapsed']) .navLabel,
+:global(html[data-sidebar='collapsed']) .whoText {
+  display: none;
+}
+:global(html[data-sidebar='collapsed']) .sidebarHead,
+:global(html[data-sidebar='collapsed']) .who,
+:global(html[data-sidebar='collapsed']) .navItem,
+:global(html[data-sidebar='collapsed']) .navItemActive,
+:global(html[data-sidebar='collapsed']) .footLinks a,
+:global(html[data-sidebar='collapsed']) .signOut {
+  justify-content: center;
+  padding-inline: 0;
+}
+:global(html[data-sidebar='collapsed']) .navItemActive::before { left: 2px; }
+
+/* --- main column ---------------------------------------------------------- */
+.main { display: flex; flex-direction: column; min-width: 0; }
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--topbar-h);
+  padding: 0 var(--space-4);
+  background: rgb(255 255 255 / 85%);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-border);
+}
+.topbarWhere {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-subtle);
+}
+
+.iconButton {
+  display: inline-grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  flex: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.iconButton:hover { background: var(--color-surface-sunken); color: var(--color-text); }
+.iconButton:focus-visible { outline: none; box-shadow: var(--ring); border-color: var(--color-accent); }
+
+.collapseIcon { transition: transform var(--dur) var(--ease); }
+:global(html[data-sidebar='collapsed']) .collapseIcon { transform: rotate(180deg); }
+
+/* The drawer toggle is the mobile control; the rail toggle is the desktop
+   one. Each hides where the other applies. */
+.iconButton[data-role='drawer-toggle'] { display: none; }
+
+.scrim { display: none; }
+
+/* Capped and centred rather than edge-to-edge: past about this width a data
+   table stops being easier to read and starts being a long walk between the
+   name on the left and the status on the right. */
+.content {
+  padding: var(--space-6);
+  min-width: 0;
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+}
 
 /* --- page furniture shared across admin pages --- */
 .pageHead {
@@ -66,18 +229,33 @@
   gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-5);
   padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border);
 }
-.pageTitle { font-size: var(--text-2xl); }
+.pageTitle { font-size: var(--text-2xl); letter-spacing: -0.01em; }
 .pageSub { color: var(--color-text-subtle); margin-top: var(--space-1); }
 .pageActions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
 
 .stats {
   display: grid; gap: var(--space-4);
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   margin-bottom: var(--space-6);
 }
 .stat {
-  background: var(--color-surface); border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg); padding: var(--space-4);
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+/* A hairline of brand colour along the top edge. Enough to stop three white
+   boxes reading as one undifferentiated block, without becoming decoration
+   that competes with the number itself. */
+.stat::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--carisca-blue), var(--carisca-cyan));
 }
 .statLabel {
   font-family: var(--font-heading); font-weight: 600; font-size: var(--text-xs);
@@ -92,6 +270,7 @@
 .tableWrap {
   background: var(--color-surface); border: 1px solid var(--color-border);
   border-radius: var(--radius-lg); overflow-x: auto;
+  box-shadow: var(--shadow-sm);
 }
 .table { width: 100%; border-collapse: collapse; font-size: var(--text-base); }
 .table th, .table td {
@@ -104,7 +283,8 @@
   background: var(--color-surface-sunken); white-space: nowrap;
 }
 .table tbody tr:last-child td { border-bottom: none; }
-.table tbody tr:hover { background: var(--color-surface-sunken); }
+.table tbody tr { transition: background-color var(--dur) var(--ease); }
+.table tbody tr:hover { background: var(--color-accent-wash); }
 .table a { text-decoration: none; font-weight: 600; }
 .table a:hover { text-decoration: underline; }
 .numeric { text-align: right; font-variant-numeric: tabular-nums; }
@@ -115,6 +295,7 @@
   display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: flex-end;
   margin-bottom: var(--space-4); background: var(--color-surface);
   border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
 }
 .filterField { display: flex; flex-direction: column; gap: var(--space-1); }
 .filterLabel {
@@ -129,11 +310,58 @@
 }
 .pagerInfo { font-size: var(--text-sm); color: var(--color-text-subtle); }
 
+/*
+ * Below this width the sidebar stops being a column and becomes an overlay
+ * drawer. The rail toggle is meaningless here — there is no room for a rail
+ * beside the content — so the hamburger takes over and the collapsed state
+ * is ignored entirely until the viewport is wide again.
+ */
 @media (max-width: 860px) {
-  .shell { grid-template-columns: minmax(0, 1fr); }
-  .sidebar { position: static; height: auto; }
-  .nav { flex-direction: row; overflow-x: auto; }
-  .navItem, .navItemActive { border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
-  .navItemActive { border-bottom-color: var(--carisca-cyan); }
+  .shell,
+  :global(html[data-sidebar='collapsed']) .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(var(--sidebar-w), 82vw);
+    transform: translateX(-100%);
+    transition: transform var(--dur) var(--ease);
+    box-shadow: var(--shadow-lg);
+  }
+  .shell[data-drawer='open'] .sidebar { transform: translateX(0); }
+
+  /* A rail makes no sense in an overlay: always show the full labels. */
+  :global(html[data-sidebar='collapsed']) .brandText,
+  :global(html[data-sidebar='collapsed']) .navLabel,
+  :global(html[data-sidebar='collapsed']) .whoText {
+    display: block;
+  }
+  :global(html[data-sidebar='collapsed']) .sidebarHead,
+  :global(html[data-sidebar='collapsed']) .who,
+  :global(html[data-sidebar='collapsed']) .navItem,
+  :global(html[data-sidebar='collapsed']) .navItemActive,
+  :global(html[data-sidebar='collapsed']) .footLinks a,
+  :global(html[data-sidebar='collapsed']) .signOut {
+    justify-content: flex-start;
+    padding-inline: var(--space-3);
+  }
+
+  .scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    background: rgb(7 21 48 / 45%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur) var(--ease);
+  }
+  .shell[data-drawer='open'] .scrim { opacity: 1; pointer-events: auto; }
+
+  .iconButton[data-role='drawer-toggle'] { display: inline-grid; }
+  .iconButton[data-role='rail-toggle'] { display: none; }
+
   .content { padding: var(--space-4); }
 }

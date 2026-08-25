@@ -21,9 +21,17 @@
   border: 1px solid var(--color-border); border-radius: var(--radius);
 }
 .roleOption:hover { border-color: var(--color-accent); }
-.roleName { font-weight: 600; }
-.roleDescription { font-size: var(--text-sm); color: var(--color-text-subtle); margin-top: 2px; }
-.rolePermissions { font-size: var(--text-xs); color: var(--color-text-subtle); margin-top: var(--space-1); }
+/*
+ * roleName/roleDescription/rolePermissions are <span>s so the whole option
+ * reads as one label for a screen reader, but that made them inline: the
+ * browser ran the three straight into each other on one line and silently
+ * dropped their margin-top, since a vertical margin has no effect on an
+ * inline element. `display: block` puts each on its own line while the
+ * label itself stays one accessible unit.
+ */
+.roleName { display: block; font-weight: 600; }
+.roleDescription { display: block; font-size: var(--text-sm); color: var(--color-text-subtle); margin-top: 2px; }
+.rolePermissions { display: block; font-size: var(--text-xs); color: var(--color-text-subtle); margin-top: var(--space-1); }
 
 /* Detail page: the record beside the things you can do to it. */
 .detail { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: var(--space-5); align-items: start; }

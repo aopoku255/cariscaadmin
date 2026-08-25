@@ -8,6 +8,7 @@ import { Badge, Callout } from '@/components/ui';
 import {
   registrationStatusLabel, registrationTone, money, timestamp, eventDateRange,
 } from '@/lib/format';
+import { WaiveFeePanel } from './WaiveFeePanel';
 import styles from '../../admin.module.css';
 import panel from '../registrations.module.css';
 
@@ -137,6 +138,7 @@ export default async function RegistrationDetailPage({ params }: { params: Param
                   {!registration.amount ? '-'
                     : registration.amount.amountMinor === 0 ? 'Free'
                       : `${money(registration.amount)}${registration.priceTier ? ` · ${registration.priceTier}` : ''}`}
+                  {registration.originalAmount && <>{' '}<Badge tone="info">Waived</Badge></>}
                 </dd>
               </div>
               <div className={panel.factRow}>
@@ -172,6 +174,8 @@ export default async function RegistrationDetailPage({ params }: { params: Param
             </dl>
           </section>
 
+          {can(user, 'cpd.registration.update') && <WaiveFeePanel registration={registration} />}
+
           <section className={panel.panel}>
             <h2 className={panel.panelTitle}>Participant</h2>
             <dl className={panel.facts}>
@@ -193,7 +197,9 @@ export default async function RegistrationDetailPage({ params }: { params: Param
               </div>
             </dl>
             {participant?.id && can(user, 'users.view') && (
-              <Link href={`/users/${participant.id}`} style={{ fontSize: 'var(--text-sm)' }}>
+              // Almost always a participant — /participants/:id redirects to
+              // /users/:id itself on the rare chance this registrant is staff.
+              <Link href={`/participants/${participant.id}`} style={{ fontSize: 'var(--text-sm)' }}>
                 Open their account
               </Link>
             )}

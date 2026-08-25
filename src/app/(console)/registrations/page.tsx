@@ -193,6 +193,14 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
                     <td className={styles.nowrap}>{r.attendanceMode === 'VIRTUAL' ? 'Online' : 'In person'}</td>
                     <td className={styles.numeric}>
                       {!r.amount ? '-' : r.amount.amountMinor === 0 ? 'Free' : money(r.amount)}
+                      {r.originalAmount && (
+                        <>
+                          {' '}
+                          <span title={`Originally ${money(r.originalAmount)}`} style={{ color: 'var(--color-text-subtle)' }}>
+                            (waived)
+                          </span>
+                        </>
+                      )}
                     </td>
                     <td className={styles.mono}>
                       <Link href={`/registrations/${encodeURIComponent(r.reference)}`}>

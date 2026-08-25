@@ -30,8 +30,29 @@ export const metadata: Metadata = {
  * render without it.
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // suppressHydrationWarning below covers exactly one thing: the data-sidebar
+  // attribute the inline script stamps on <html> before React hydrates.
+  // Without it React reports a mismatch on every load. It does not extend to
+  // the page content — only to this element's own attributes.
   return (
-    <html lang="en" className={`${barlow.variable} ${arimo.variable}`}>
+    <html
+      lang="en"
+      className={`${barlow.variable} ${arimo.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/*
+          Runs before first paint so a collapsed sidebar renders collapsed
+          rather than opening for a frame and snapping shut. It only stamps an
+          attribute the CSS already keys off; if it fails, the sidebar simply
+          starts expanded.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{document.documentElement.dataset.sidebar=localStorage.getItem('carisca.sidebar.collapsed')==='1'?'collapsed':'expanded'}catch(e){}`,
+          }}
+        />
+      </head>
       <body>
         <a className="skip-link" href="#main">Skip to content</a>
         {children}

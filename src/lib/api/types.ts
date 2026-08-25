@@ -94,6 +94,13 @@ export interface EventSpeaker {
   organization: string | null;
   bio: string | null;
   role: 'SPEAKER' | 'FACILITATOR' | 'MODERATOR' | 'PANELLIST';
+  photo: {
+    id: string;
+    url: string;
+    mimeType: string;
+    sizeBytes: number;
+    originalName: string;
+  } | null;
 }
 
 export interface CpdDetail {
@@ -157,6 +164,12 @@ export interface Registration {
   holdExpiresAt: string | null;
   amount: Money | null;
   priceTier: string | null;
+  /** What this was quoted at before any waiver. Null unless one has happened. */
+  originalAmount: Money | null;
+  waiverReason: string | null;
+  waivedAt: string | null;
+  /** Present only for a staff viewer — never surfaced to the participant. */
+  waivedBy?: { id: string; name: string };
   wantsCertificate: boolean | null;
   isPreviousAttendee: boolean | null;
   mediaConsentGiven: boolean;
