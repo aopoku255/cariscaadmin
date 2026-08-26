@@ -4,9 +4,8 @@ import { useActionState, useState } from 'react';
 import { Button, Callout, inputClass, selectClass } from '@/components/ui';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import type { EventPrice, ReferenceData } from '@/lib/api/types';
-import { savePricesAction } from '../actions';
-import { emptyAdminState } from '../state';
-import styles from '../cpd.module.css';
+import { emptyAdminState, type AdminAction } from './state';
+import styles from './AdminEvent.module.css';
 
 /**
  * Sets what an event costs.
@@ -16,6 +15,10 @@ import styles from '../cpd.module.css';
  * the same event quoted in more than one currency. Each row carries the
  * conditions under which it applies and the server picks the most specific
  * match at registration.
+ *
+ * Shared between CPD and Summit — the API endpoint and payload shape are
+ * identical, only which event it saves to differs, which is what `action`
+ * (bound to the right module's route by the caller) carries.
  */
 
 type Row = {
@@ -69,14 +72,15 @@ function toRow(p: EventPrice): Row {
 }
 
 export function PricesEditor({
-  eventId, prices, currencies, canEdit,
+  eventId, prices, currencies, canEdit, action,
 }: {
   eventId: string;
   prices: EventPrice[];
   currencies: ReferenceData['currencies'];
   canEdit: boolean;
+  action: AdminAction;
 }) {
-  const [state, formAction] = useActionState(savePricesAction, emptyAdminState);
+  const [state, formAction] = useActionState(action, emptyAdminState);
   const defaultCurrency = currencies.find((c) => c.code === 'GHS')?.code ?? currencies[0]?.code ?? 'GHS';
   const [rows, setRows] = useState<Row[]>(prices.map(toRow));
 

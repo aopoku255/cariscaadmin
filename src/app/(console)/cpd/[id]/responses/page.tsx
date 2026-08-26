@@ -168,7 +168,7 @@ function QuestionBody({ q, responses }: { q: QuestionResponses; responses: numbe
 export default async function ResponsesPage({ params }: { params: Params }) {
   const { id } = await params;
   const user = await requireStaff(`/cpd/${id}/responses`);
-  if (!can(user, 'cpd.registration.view')) redirect(`/cpd/${id}`);
+  if (!can(user, 'registration.view')) redirect(`/cpd/${id}`);
 
   let event: AdminCpdEvent;
   let summary: EventResponses;
@@ -203,7 +203,7 @@ export default async function ResponsesPage({ params }: { params: Params }) {
           <ButtonLink href={`/registrations?eventId=${id}`} variant="secondary">
             See them individually
           </ButtonLink>
-          {can(user, 'cpd.registration.export') && (
+          {can(user, 'registration.export') && (
             <a
               className="download"
               href={`/registrations/export?eventId=${id}`}

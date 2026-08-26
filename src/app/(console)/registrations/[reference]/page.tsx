@@ -174,7 +174,7 @@ export default async function RegistrationDetailPage({ params }: { params: Param
             </dl>
           </section>
 
-          {can(user, 'cpd.registration.update') && <WaiveFeePanel registration={registration} />}
+          {can(user, 'registration.update') && <WaiveFeePanel registration={registration} />}
 
           <section className={panel.panel}>
             <h2 className={panel.panelTitle}>Participant</h2>
@@ -228,7 +228,7 @@ export default async function RegistrationDetailPage({ params }: { params: Param
         </div>
       </div>
 
-      {!can(user, 'cpd.registration.view') && (
+      {!can(user, 'registration.view') && (
         <Callout tone="info" title="Read-only">
           You are seeing this because it is your own registration.
         </Callout>

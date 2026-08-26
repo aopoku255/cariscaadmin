@@ -5,18 +5,21 @@ import { apiAsUser } from '@/lib/auth/session';
 import { apiRequest } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/client';
 import { Badge, Callout, ButtonLink, Card } from '@/components/ui';
-import { eventDateRange, eventTime, timezoneLabel, money } from '@/lib/format';
+import { eventDateRange, eventTime, timezoneLabel } from '@/lib/format';
 import { statusTone, statusLabel } from '../../status';
-import type { AdminCpdEvent, EventSummary } from '../types';
+import type { AdminSummitEvent, EventSummary } from '../types';
 import type { Partner, ReferenceData } from '@/lib/api/types';
 import { LifecycleControls } from '@/components/admin/event/LifecycleControls';
 import { QuestionsEditor } from '@/components/admin/event/QuestionsEditor';
 import { EventPartners } from '@/components/admin/event/EventPartners';
 import { PricesEditor } from '@/components/admin/event/PricesEditor';
 import { SpeakersEditor } from '@/components/admin/event/SpeakersEditor';
-import { transitionCpdAction, saveQuestionsAction, savePricesAction, saveSpeakersAction } from '../actions';
-import { saveEventPartnersAction } from '../../partners/actions';
-import styles from '../cpd.module.css';
+import { TracksEditor } from './TracksEditor';
+import { SponsorshipTiersEditor } from './SponsorshipTiersEditor';
+import {
+  transitionSummitAction, saveQuestionsAction, savePricesAction, saveSpeakersAction, saveSummitPartnersAction,
+} from '../actions';
+import styles from '../summit.module.css';
 import admin from '../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -27,31 +30,29 @@ type SearchParams = Promise<{ created?: string }>;
 export async function generateMetadata({ params }: { params: Params }) {
   const { id } = await params;
   try {
-    const { data } = await apiAsUser<AdminCpdEvent>(`/cpd/events/${id}`);
+    const { data } = await apiAsUser<AdminSummitEvent>(`/summit/events/${id}`);
     return { title: data.title };
   } catch {
     return { title: 'Event' };
   }
 }
 
-export default async function AdminEventPage({
+export default async function AdminSummitEventPage({
   params, searchParams,
 }: { params: Params; searchParams: SearchParams }) {
   const { id } = await params;
   const { created } = await searchParams;
-  const user = await requireStaff(`/cpd/${id}`);
+  const user = await requireStaff(`/summit/${id}`);
 
-  let event: AdminCpdEvent;
+  let event: AdminSummitEvent;
   try {
-    const { data } = await apiAsUser<AdminCpdEvent>(`/cpd/events/${id}`);
+    const { data } = await apiAsUser<AdminSummitEvent>(`/summit/events/${id}`);
     event = data;
   } catch (err) {
     if (err instanceof ApiError && (err.status === 404 || err.status === 403)) notFound();
     throw err;
   }
 
-  // The picker chooses from what already exists — that is what keeps one
-  // KNUST in the system rather than four.
   let library: Partner[] = [];
   if (can(user, 'partners.view')) {
     try {
@@ -71,9 +72,17 @@ export default async function AdminEventPage({
   let summary: EventSummary | null = null;
   if (can(user, 'registration.view')) {
     try {
-      const { data } = await apiAsUser<EventSummary>(`/cpd/events/${id}/summary`);
+      const { data } = await apiAsUser<EventSummary>(`/summit/events/${id}/summary`);
       summary = data;
     } catch { /* the page is still useful without the counts */ }
+  }
+
+  let abstractCount: number | null = null;
+  if (can(user, 'abstract.view')) {
+    try {
+      const { data } = await apiAsUser<unknown[]>(`/summit/events/${id}/abstracts`);
+      abstractCount = data?.length ?? 0;
+    } catch { /* the button still works without a count */ }
   }
 
   const inPerson = event.occupancy?.inPerson;
@@ -85,7 +94,7 @@ export default async function AdminEventPage({
     <>
       <header className={admin.pageHead}>
         <div>
-          <Link href="/cpd" className={styles.back}>← CPD events</Link>
+          <Link href="/summit" className={styles.back}>← Summit events</Link>
           <div className={styles.titleRow}>
             <h1 className={admin.pageTitle}>{event.title}</h1>
             <Badge tone={statusTone(event.status)}>{statusLabel[event.status]}</Badge>
@@ -97,17 +106,22 @@ export default async function AdminEventPage({
           </p>
         </div>
         <div className={admin.pageActions}>
-          {can(user, 'cpd.update') && (
-            <ButtonLink href={`/cpd/${event.id}/edit`} variant="secondary">Edit details</ButtonLink>
+          {can(user, 'summit.update') && (
+            <ButtonLink href={`/summit/${event.id}/edit`} variant="secondary">Edit details</ButtonLink>
           )}
           {can(user, 'attendance.view') && (
-            <ButtonLink href={`/cpd/${event.id}/attendance`} variant="secondary">
+            <ButtonLink href={`/summit/${event.id}/attendance`} variant="secondary">
               Attendance
             </ButtonLink>
           )}
           {can(user, 'registration.view') && (
-            <ButtonLink href={`/cpd/${event.id}/responses`} variant="secondary">
+            <ButtonLink href={`/summit/${event.id}/responses`} variant="secondary">
               Responses
+            </ButtonLink>
+          )}
+          {can(user, 'abstract.view') && (
+            <ButtonLink href={`/summit/${event.id}/abstracts`} variant="secondary">
+              Abstracts{abstractCount !== null ? ` (${abstractCount})` : ''}
             </ButtonLink>
           )}
           {can(user, 'registration.view') && (
@@ -120,16 +134,11 @@ export default async function AdminEventPage({
 
       {created && (
         <Callout tone="success" title="Draft created">
-          Add your registration questions and fees, then publish when you are ready.
-          Nothing is public yet.
+          Add your tracks, fees and call-for-papers window, then publish when
+          you are ready. Nothing is public yet.
         </Callout>
       )}
 
-      {/*
-        Confirms the banner actually saved. Without this the only way to tell
-        was to open the editor or the public page, which is how a missing
-        banner reaches participants unnoticed.
-      */}
       {event.banner ? (
         <figure className={styles.bannerPreview}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -138,10 +147,10 @@ export default async function AdminEventPage({
             Banner, cropped to 16:9 exactly as participants see it.
           </figcaption>
         </figure>
-      ) : can(user, 'cpd.update') && (
+      ) : can(user, 'summit.update') && (
         <Callout tone="info" title="No banner image">
           This event will show as a plain card in listings and on its own page.{' '}
-          <Link href={`/cpd/${event.id}/edit`}>Add a banner</Link>.
+          <Link href={`/summit/${event.id}/edit`}>Add a banner</Link>.
         </Callout>
       )}
 
@@ -194,25 +203,45 @@ export default async function AdminEventPage({
       <div className={styles.columns}>
         <div className={styles.mainCol}>
           <Card>
+            <h2 className={styles.cardTitle}>Tracks</h2>
+            <TracksEditor
+              eventId={event.id}
+              tracks={event.tracks ?? []}
+              canEdit={can(user, 'summit.update')}
+            />
+          </Card>
+
+          <Card>
             <h2 className={styles.cardTitle}>Registration questions</h2>
             <QuestionsEditor
               eventId={event.id}
               questions={event.questions ?? []}
-              canEdit={can(user, 'cpd.question.manage')}
+              canEdit={can(user, 'summit.question.manage')}
               action={saveQuestionsAction}
+            />
+          </Card>
+
+          <Card>
+            <h2 className={styles.cardTitle}>Sponsorship tiers</h2>
+            <SponsorshipTiersEditor
+              eventId={event.id}
+              tiers={event.sponsorshipTiers ?? []}
+              currencies={currencies}
+              canEdit={can(user, 'summit.update')}
             />
           </Card>
 
           {can(user, 'partners.view') && (
             <Card>
-              <h2 className={styles.cardTitle}>Partners</h2>
+              <h2 className={styles.cardTitle}>Partners and sponsors</h2>
               <EventPartners
                 eventId={event.id}
                 attached={event.partners ?? []}
                 library={library}
-                canEdit={can(user, 'cpd.update')}
+                tiers={event.sponsorshipTiers ?? []}
+                canEdit={can(user, 'summit.update')}
                 apiBase={apiBase}
-                action={saveEventPartnersAction}
+                action={saveSummitPartnersAction}
               />
             </Card>
           )}
@@ -223,7 +252,7 @@ export default async function AdminEventPage({
               eventId={event.id}
               prices={event.prices ?? []}
               currencies={currencies}
-              canEdit={can(user, 'cpd.update')}
+              canEdit={can(user, 'summit.update')}
               action={savePricesAction}
             />
           </Card>
@@ -233,7 +262,7 @@ export default async function AdminEventPage({
             <SpeakersEditor
               eventId={event.id}
               speakers={event.speakers ?? []}
-              canEdit={can(user, 'cpd.update')}
+              canEdit={can(user, 'summit.update')}
               apiBase={apiBase}
               action={saveSpeakersAction}
             />
@@ -271,8 +300,8 @@ export default async function AdminEventPage({
               eventId={event.id}
               status={event.status}
               user={user}
-              permissionPrefix="cpd"
-              action={transitionCpdAction}
+              permissionPrefix="summit"
+              action={transitionSummitAction}
             />
           </Card>
 
@@ -297,6 +326,7 @@ export default async function AdminEventPage({
             <dl className={styles.details}>
               <div><dt>Format</dt><dd>{event.deliveryMode === 'HYBRID' ? 'In person and online' : event.deliveryMode === 'ONLINE' ? 'Online' : 'In person'}</dd></div>
               {event.location?.venue && <div><dt>Venue</dt><dd>{event.location.venue}</dd></div>}
+              {event.summit?.theme && <div><dt>Theme</dt><dd>{event.summit.theme}</dd></div>}
               <div><dt>Certificate</dt><dd>{event.certificate?.issues ? 'Yes' : 'No'}</dd></div>
               <div>
                 <dt>Attendance</dt>

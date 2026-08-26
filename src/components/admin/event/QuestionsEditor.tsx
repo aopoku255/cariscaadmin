@@ -4,9 +4,8 @@ import { useActionState, useState } from 'react';
 import { Callout, Button, inputClass, selectClass } from '@/components/ui';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import type { RegistrationQuestion, QuestionType } from '@/lib/api/types';
-import { saveQuestionsAction } from '../actions';
-import { emptyAdminState } from '../state';
-import styles from '../cpd.module.css';
+import { emptyAdminState, type AdminAction } from './state';
+import styles from './AdminEvent.module.css';
 
 /**
  * Builds the event's registration form.
@@ -14,6 +13,8 @@ import styles from '../cpd.module.css';
  * The whole set is submitted as JSON in one hidden field, matching the API's
  * replace-everything endpoint. Editing rows in the browser and saving once is
  * far less error-prone than a request per question.
+ *
+ * Shared between CPD and Summit — see PricesEditor for why.
  */
 
 interface Option {
@@ -72,9 +73,11 @@ function toDraft(q: RegistrationQuestion): Draft {
 }
 
 export function QuestionsEditor({
-  eventId, questions, canEdit,
-}: { eventId: string; questions: RegistrationQuestion[]; canEdit: boolean }) {
-  const [state, formAction] = useActionState(saveQuestionsAction, emptyAdminState);
+  eventId, questions, canEdit, action,
+}: {
+  eventId: string; questions: RegistrationQuestion[]; canEdit: boolean; action: AdminAction;
+}) {
+  const [state, formAction] = useActionState(action, emptyAdminState);
   const [drafts, setDrafts] = useState<Draft[]>(questions.map(toDraft));
 
   // Drag state. `armed` is the row whose handle is being held — the <li> is

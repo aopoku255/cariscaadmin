@@ -2,12 +2,11 @@
 
 import { useActionState, useState } from 'react';
 import Link from 'next/link';
-import { Button, Callout, selectClass } from '@/components/ui';
+import { Callout, selectClass } from '@/components/ui';
 import { SubmitButton } from '@/components/forms/SubmitButton';
-import type { Partner, PartnerRole } from '@/lib/api/types';
-import { saveEventPartnersAction } from '../../partners/actions';
-import { emptyAdminState } from '../state';
-import styles from '../cpd.module.css';
+import type { Partner, PartnerRole, SponsorshipTier } from '@/lib/api/types';
+import { emptyAdminState, type AdminAction } from './state';
+import styles from './AdminEvent.module.css';
 
 const ROLES: { value: PartnerRole; label: string }[] = [
   { value: 'PARTNER', label: 'Partner' },
@@ -23,22 +22,33 @@ const ROLES: { value: PartnerRole; label: string }[] = [
  *
  * Attaching is picking from what already exists rather than typing a name —
  * that is what keeps one KNUST in the system instead of four.
+ *
+ * Shared between CPD and Summit — see PricesEditor for why. `tiers` is only
+ * ever non-empty on a Summit event; a CPD page simply never passes any, and
+ * the tier column stops rendering.
  */
 export function EventPartners({
-  eventId, attached, library, canEdit, apiBase,
+  eventId, attached, library, tiers = [], canEdit, apiBase, action,
 }: {
   eventId: string;
   attached: Partner[];
   library: Partner[];
+  tiers?: SponsorshipTier[];
   canEdit: boolean;
   apiBase: string;
+  action: AdminAction;
 }) {
-  const [state, formAction] = useActionState(saveEventPartnersAction, emptyAdminState);
+  const [state, formAction] = useActionState(action, emptyAdminState);
   const [rows, setRows] = useState(
-    attached.map((p) => ({ id: p.id, role: (p.role ?? 'PARTNER') as PartnerRole })),
+    attached.map((p) => ({
+      id: p.id,
+      role: (p.role ?? 'PARTNER') as PartnerRole,
+      tierId: p.sponsorshipTierId ?? '',
+    })),
   );
 
   const byId = new Map(library.map((p) => [p.id, p]));
+  const tierById = new Map(tiers.map((t) => [t.id, t]));
   const chosen = new Set(rows.map((r) => r.id));
   const available = library.filter((p) => p.isActive && !chosen.has(p.id));
 
@@ -46,6 +56,7 @@ export function EventPartners({
     partnerId: Number(r.id),
     role: r.role,
     sortOrder: (i + 1) * 10,
+    sponsorshipTierId: r.role === 'SPONSOR' && r.tierId ? Number(r.tierId) : null,
   })));
 
   if (!canEdit) {
@@ -56,7 +67,9 @@ export function EventPartners({
           {attached.map((p) => (
             <li key={p.id}>
               <strong>{p.name}</strong>
-              <span className={styles.muted}> · {ROLES.find((r) => r.value === p.role)?.label ?? p.role}</span>
+              <span className={styles.muted}> · {ROLES.find((r) => r.value === p.role)?.label ?? p.role}
+                {p.sponsorshipTierId && tierById.get(p.sponsorshipTierId)
+                  ? ` · ${tierById.get(p.sponsorshipTierId)!.name}` : ''}</span>
             </li>
           ))}
         </ul>
@@ -87,7 +100,7 @@ export function EventPartners({
             {rows.map((row, i) => {
               const partner = byId.get(row.id);
               return (
-                <li key={row.id} className={styles.partnerRow}>
+                <li key={row.id} className={tiers.length ? styles.partnerRowTiered : styles.partnerRow}>
                   <div className={styles.partnerIdent}>
                     {partner?.logo ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -111,6 +124,21 @@ export function EventPartners({
                     {ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
                   </select>
 
+                  {tiers.length > 0 && (
+                    <select
+                      className={selectClass}
+                      value={row.role === 'SPONSOR' ? row.tierId : ''}
+                      disabled={row.role !== 'SPONSOR'}
+                      aria-label={`Sponsorship tier for ${partner?.name ?? 'partner'}`}
+                      onChange={(e) => setRows((rs) => rs.map((r, j) => (
+                        j === i ? { ...r, tierId: e.target.value } : r
+                      )))}
+                    >
+                      <option value="">No tier</option>
+                      {tiers.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
+                  )}
+
                   <button type="button" className={styles.removeButton}
                     onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}>
                     Remove
@@ -128,7 +156,7 @@ export function EventPartners({
                 aria-label="Add a partner to this event"
                 onChange={(e) => {
                   if (!e.target.value) return;
-                  setRows((rs) => [...rs, { id: e.target.value, role: 'PARTNER' }]);
+                  setRows((rs) => [...rs, { id: e.target.value, role: 'PARTNER', tierId: '' }]);
                   e.currentTarget.value = '';
                 }}
               >

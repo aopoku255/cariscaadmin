@@ -5,9 +5,8 @@ import { Callout, Button } from '@/components/ui';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import type { EventStatus, SessionUser } from '@/lib/api/types';
 import { can } from '@/lib/auth/permissions';
-import { transitionCpdAction } from '../actions';
-import { emptyAdminState } from '../state';
-import styles from '../cpd.module.css';
+import { emptyAdminState, type AdminAction } from './state';
+import styles from './AdminEvent.module.css';
 
 /**
  * The lifecycle buttons.
@@ -15,6 +14,11 @@ import styles from '../cpd.module.css';
  * Only transitions that are legal from the current status are offered — the
  * state machine's rules mirrored here so an admin is never invited to press
  * something that will 409. The API still enforces it.
+ *
+ * Shared between CPD and Summit: the transitions, their required roles and
+ * their confirmations are identical in shape between the two modules — only
+ * the permission keys differ, by module prefix (`cpd.publish` vs
+ * `summit.publish`), which is the one thing `permissionPrefix` carries.
  */
 const TRANSITIONS: Record<string, {
   from: EventStatus[]; label: string; permission: string;
@@ -23,46 +27,46 @@ const TRANSITIONS: Record<string, {
   publish: {
     from: ['DRAFT', 'PENDING_APPROVAL'],
     label: 'Publish',
-    permission: 'cpd.publish',
+    permission: 'publish',
     tone: 'primary',
     confirm: 'Publish this event? It becomes visible on the public site immediately.',
   },
   'open-registration': {
     from: ['PUBLISHED', 'REGISTRATION_CLOSED'],
     label: 'Open registration',
-    permission: 'cpd.publish',
+    permission: 'publish',
     tone: 'primary',
     confirm: 'Open registration? People will be able to sign up straight away.',
   },
   'close-registration': {
     from: ['REGISTRATION_OPEN'],
     label: 'Close registration',
-    permission: 'cpd.update',
+    permission: 'update',
     tone: 'secondary',
     confirm: 'Close registration? Nobody new will be able to sign up.',
   },
   unpublish: {
     from: ['PUBLISHED'],
     label: 'Return to draft',
-    permission: 'cpd.publish',
+    permission: 'publish',
     tone: 'secondary',
   },
   start: {
     from: ['PUBLISHED', 'REGISTRATION_OPEN', 'REGISTRATION_CLOSED'],
     label: 'Mark as started',
-    permission: 'cpd.update',
+    permission: 'update',
     tone: 'secondary',
   },
   complete: {
     from: ['ONGOING', 'REGISTRATION_CLOSED'],
     label: 'Mark as finished',
-    permission: 'cpd.update',
+    permission: 'update',
     tone: 'secondary',
   },
   cancel: {
     from: ['DRAFT', 'PENDING_APPROVAL', 'PUBLISHED', 'REGISTRATION_OPEN', 'REGISTRATION_CLOSED', 'ONGOING'],
     label: 'Cancel event',
-    permission: 'cpd.cancel',
+    permission: 'cancel',
     tone: 'danger',
     confirm: 'Cancel this event? Everyone registered is emailed immediately. This cannot be undone.',
     needsReason: true,
@@ -70,24 +74,28 @@ const TRANSITIONS: Record<string, {
   archive: {
     from: ['COMPLETED', 'CANCELLED'],
     label: 'Archive',
-    permission: 'cpd.archive',
+    permission: 'archive',
     tone: 'secondary',
   },
 };
 
 export function LifecycleControls({
-  eventId, status, user,
-}: { eventId: string; status: EventStatus; user: SessionUser }) {
-  const [state, formAction] = useActionState(transitionCpdAction, emptyAdminState);
+  eventId, status, user, permissionPrefix, action,
+}: {
+  eventId: string; status: EventStatus; user: SessionUser; permissionPrefix: 'cpd' | 'summit'; action: AdminAction;
+}) {
+  const [state, formAction] = useActionState(action, emptyAdminState);
   const [cancelling, setCancelling] = useState(false);
 
+  const permissionFor = (t: (typeof TRANSITIONS)[string]) => `${permissionPrefix}.${t.permission}`;
+
   const available = Object.entries(TRANSITIONS).filter(
-    ([, t]) => t.from.includes(status) && can(user, t.permission),
+    ([, t]) => t.from.includes(status) && can(user, permissionFor(t)),
   );
 
   // Everything is either done or beyond this user's role.
   const blocked = Object.entries(TRANSITIONS).filter(
-    ([, t]) => t.from.includes(status) && !can(user, t.permission),
+    ([, t]) => t.from.includes(status) && !can(user, permissionFor(t)),
   );
 
   return (
@@ -109,22 +117,22 @@ export function LifecycleControls({
       )}
 
       <div className={styles.lifecycleButtons}>
-        {available.map(([action, t]) => {
-          if (action === 'cancel') {
+        {available.map(([action_, t]) => {
+          if (action_ === 'cancel') {
             return (
-              <Button key={action} type="button" variant="danger" size="sm"
+              <Button key={action_} type="button" variant="danger" size="sm"
                 onClick={() => setCancelling(true)}>
                 {t.label}
               </Button>
             );
           }
           return (
-            <form key={action} action={formAction}
+            <form key={action_} action={formAction}
               onSubmit={(e) => {
                 if (t.confirm && !window.confirm(t.confirm)) e.preventDefault();
               }}>
               <input type="hidden" name="id" value={eventId} />
-              <input type="hidden" name="action" value={action} />
+              <input type="hidden" name="action" value={action_} />
               <SubmitButton size="sm" variant={t.tone === 'primary' ? 'primary' : 'secondary'}>
                 {t.label}
               </SubmitButton>

@@ -31,7 +31,8 @@ export type IconKey =
 export const ADMIN_NAV: NavItem[] = [
   { href: '/', label: 'Overview', icon: 'overview' },
   { href: '/cpd', label: 'CPD events', permission: 'cpd.view', icon: 'calendar' },
-  { href: '/registrations', label: 'Registrations', permission: 'cpd.registration.view', icon: 'clipboard' },
+  { href: '/summit', label: 'Summit events', permission: 'summit.view', icon: 'calendar' },
+  { href: '/registrations', label: 'Registrations', permission: 'registration.view', icon: 'clipboard' },
   { href: '/partners', label: 'Partners', permission: 'partners.view', icon: 'handshake' },
   // Staff and participants are different audiences with different fields and
   // different volume (a handful of staff against however many people have

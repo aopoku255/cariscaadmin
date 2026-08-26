@@ -78,7 +78,7 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
             {meta ? `${meta.total} matching` : 'Everyone signed up across CPD events'}
           </p>
         </div>
-        {can(user, 'cpd.registration.export') && params.eventId && (
+        {can(user, 'registration.export') && params.eventId && (
           <div className={styles.pageActions}>
             {/*
               Through our own route handler rather than straight at the API: a
@@ -103,7 +103,7 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
 
       {failed && <Callout tone="danger" title="We could not load registrations">Try refreshing.</Callout>}
 
-      {can(user, 'cpd.registration.export') && !params.eventId && (
+      {can(user, 'registration.export') && !params.eventId && (
         <Callout tone="info" title="Pick an event to export">
           Exports cover one event at a time. Choose an event below and the export
           button appears.

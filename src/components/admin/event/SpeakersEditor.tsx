@@ -5,9 +5,8 @@ import { Button, Callout, inputClass, selectClass, textareaClass } from '@/compo
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { ImageUpload } from '@/components/forms/ImageUpload';
 import type { EventSpeaker } from '@/lib/api/types';
-import { saveSpeakersAction } from '../actions';
-import { emptyAdminState } from '../state';
-import styles from '../cpd.module.css';
+import { emptyAdminState, type AdminAction } from './state';
+import styles from './AdminEvent.module.css';
 
 /**
  * Who is presenting.
@@ -16,6 +15,8 @@ import styles from '../cpd.module.css';
  * questions: an admin edits the set in the browser and saves once, rather
  * than each row round-tripping on its own. Display order on the public page
  * follows this list's order — first added, first shown — the same as fees.
+ *
+ * Shared between CPD and Summit — see PricesEditor for why.
  */
 
 type Role = EventSpeaker['role'];
@@ -57,14 +58,15 @@ function toRow(s: EventSpeaker): Row {
 }
 
 export function SpeakersEditor({
-  eventId, speakers, canEdit, apiBase,
+  eventId, speakers, canEdit, apiBase, action,
 }: {
   eventId: string;
   speakers: EventSpeaker[];
   canEdit: boolean;
   apiBase: string;
+  action: AdminAction;
 }) {
-  const [state, formAction] = useActionState(saveSpeakersAction, emptyAdminState);
+  const [state, formAction] = useActionState(action, emptyAdminState);
   const [rows, setRows] = useState<Row[]>(speakers.map(toRow));
 
   const update = (key: string, patch: Partial<Row>) =>

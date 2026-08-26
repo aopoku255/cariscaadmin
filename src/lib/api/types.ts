@@ -85,6 +85,8 @@ export interface EventSession {
   endAt: string;
   location: string | null;
   requiredForAttendance: boolean;
+  /** Absent on a CPD event's linear agenda — set only on a Summit session. */
+  trackId: string | null;
 }
 
 export interface EventSpeaker {
@@ -109,6 +111,29 @@ export interface CpdDetail {
   learningObjectives: string[];
   targetAudience: string[];
   requirements: string | null;
+}
+
+export interface SummitDetail {
+  theme: string | null;
+  callForPapersOpensAt: string | null;
+  callForPapersClosesAt: string | null;
+  keynoteCount: number | null;
+}
+
+export interface EventTrack {
+  id: string;
+  name: string;
+  description: string | null;
+  color: string | null;
+  sortOrder: number;
+}
+
+export interface SponsorshipTier {
+  id: string;
+  name: string;
+  benefits: string | null;
+  money: Money | null;
+  sortOrder: number;
 }
 
 export interface PublicEvent {
@@ -149,6 +174,9 @@ export interface PublicEvent {
   sessions?: EventSession[];
   speakers?: EventSpeaker[];
   cpd?: CpdDetail;
+  summit?: SummitDetail;
+  tracks?: EventTrack[];
+  sponsorshipTiers?: SponsorshipTier[];
   availability?: {
     inPerson: { isFull: boolean } | null;
     virtual: { isFull: boolean } | null;
@@ -356,4 +384,6 @@ export interface Partner {
   isActive: boolean;
   /** Present only when read through an event. */
   role?: PartnerRole;
+  /** Meaningful only when role is SPONSOR, and only on a Summit event. */
+  sponsorshipTierId?: string | null;
 }
