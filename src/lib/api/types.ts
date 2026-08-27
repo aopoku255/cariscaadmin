@@ -226,6 +226,16 @@ export interface Registration {
     organization: string | null;
     countryCode: string | null;
   };
+  /** Every payment attempt, most recent first. */
+  payments?: {
+    reference: string;
+    provider: string;
+    status: 'PENDING' | 'PROCESSING' | 'SUCCESSFUL' | 'FAILED' | 'CANCELLED' | 'REFUNDED' | 'PARTIALLY_REFUNDED';
+    amount: Money;
+    failureReason: string | null;
+    paidAt: string | null;
+    createdAt: string;
+  }[];
 }
 
 export interface Quote {
@@ -238,6 +248,19 @@ export interface Quote {
   isFree: boolean;
   isFull: boolean;
   waitlistAvailable: boolean;
+}
+
+export interface CertificateTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  signatoryName: string | null;
+  signatoryTitle: string | null;
+  signatoryDepartment: string | null;
+  signatureFile: { id: string; url: string; mimeType: string; originalName: string } | null;
+  isDefault: boolean;
+  isActive: boolean;
+  createdAt: string;
 }
 
 export interface ReferenceData {

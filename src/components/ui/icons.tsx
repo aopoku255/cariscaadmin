@@ -9,7 +9,7 @@
  */
 export type IconName =
   | 'overview' | 'calendar' | 'clipboard' | 'handshake' | 'shield'
-  | 'users' | 'history' | 'chevronLeft' | 'menu' | 'close' | 'logout' | 'external';
+  | 'users' | 'history' | 'award' | 'chevronLeft' | 'menu' | 'close' | 'logout' | 'external';
 
 const PATHS: Record<IconName, React.ReactNode> = {
   overview: (
@@ -60,6 +60,12 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M3.5 10a8.5 8.5 0 1 1 1.2 6" />
       <path d="M3 20v-5h5" />
       <path d="M12 7.5V12l3 1.8" />
+    </>
+  ),
+  award: (
+    <>
+      <circle cx="12" cy="8" r="5.2" />
+      <path d="M8.5 12.5 7 21l5-2.6L17 21l-1.5-8.5" />
     </>
   ),
   chevronLeft: <path d="m15 5-7 7 7 7" />,

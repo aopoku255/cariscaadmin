@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireStaff, can } from '@/lib/auth/require-staff';
 import { apiAsUser } from '@/lib/auth/session';
 import { apiRequest, ApiError } from '@/lib/api/client';
-import type { ReferenceData } from '@/lib/api/types';
+import type { ReferenceData, CertificateTemplate } from '@/lib/api/types';
 import { SummitForm } from '../../SummitForm';
 import type { AdminSummitEvent } from '../../types';
 import styles from '../../../admin.module.css';
@@ -33,6 +33,12 @@ export default async function EditSummitPage({ params }: { params: Params }) {
     countries = data.countries;
   } catch { /* form still works */ }
 
+  let certificateTemplates: CertificateTemplate[] = [];
+  try {
+    const { data } = await apiAsUser<CertificateTemplate[]>('/certificate-templates');
+    certificateTemplates = data;
+  } catch { /* form still works — the picker just offers only the default */ }
+
   const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
   return (
@@ -49,7 +55,7 @@ export default async function EditSummitPage({ params }: { params: Params }) {
         </div>
       </header>
 
-      <SummitForm event={event} countries={countries} apiBase={apiBase} />
+      <SummitForm event={event} countries={countries} apiBase={apiBase} certificateTemplates={certificateTemplates} />
     </>
   );
 }

@@ -79,6 +79,7 @@ function eventBody(fd: FormData) {
     registrationClosesAt: instant(fd, 'registrationClosesDate', 'registrationClosesTime'),
     issuesCertificate: bool(fd, 'issuesCertificate'),
     certificateRequiresPayment: bool(fd, 'certificateRequiresPayment'),
+    certificateTemplateId: str(fd, 'certificateTemplateId') ? Number(str(fd, 'certificateTemplateId')) : null,
     attendanceRule: str(fd, 'attendanceRule') ?? 'CHECK_IN',
     minAttendancePercent: str(fd, 'minAttendancePercent') ? num(fd, 'minAttendancePercent') : null,
     contactEmail: str(fd, 'contactEmail'),

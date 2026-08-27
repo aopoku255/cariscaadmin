@@ -26,7 +26,7 @@ export function canAny(user: SessionUser | null, ...permissions: string[]): bool
 export interface NavItem { href: string; label: string; permission?: string; icon: IconKey }
 
 export type IconKey =
-  | 'overview' | 'calendar' | 'clipboard' | 'handshake' | 'shield' | 'users' | 'history';
+  | 'overview' | 'calendar' | 'clipboard' | 'handshake' | 'shield' | 'users' | 'history' | 'award';
 
 export const ADMIN_NAV: NavItem[] = [
   { href: '/', label: 'Overview', icon: 'overview' },
@@ -34,6 +34,12 @@ export const ADMIN_NAV: NavItem[] = [
   { href: '/summit', label: 'Summit events', permission: 'summit.view', icon: 'calendar' },
   { href: '/registrations', label: 'Registrations', permission: 'registration.view', icon: 'clipboard' },
   { href: '/partners', label: 'Partners', permission: 'partners.view', icon: 'handshake' },
+  {
+    href: '/certificate-templates',
+    label: 'Certificate templates',
+    permission: 'certificate_templates.manage',
+    icon: 'award',
+  },
   // Staff and participants are different audiences with different fields and
   // different volume (a handful of staff against however many people have
   // registered), so they get separate lists rather than one filtered by kind.

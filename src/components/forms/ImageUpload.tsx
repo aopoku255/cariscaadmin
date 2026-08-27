@@ -21,6 +21,8 @@ export function ImageUpload({
   apiBase,
   onChange,
   aspectRatio = '16 / 9',
+  maxSizeMb = 5,
+  accept = 'image/jpeg,image/png,image/webp',
 }: {
   name: string;
   purpose?: string;
@@ -40,6 +42,10 @@ export function ImageUpload({
       headshot, so the preview crops the same way the image is used elsewhere
       instead of always letterboxing to widescreen. */
   aspectRatio?: string;
+  /** Matched to whichever `storage.service.js` purpose this upload uses —
+      the defaults are event_banner's limits, not a universal rule. */
+  maxSizeMb?: number;
+  accept?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<{ id: string; url: string } | null>(initial);
@@ -55,10 +61,10 @@ export function ImageUpload({
     if (!chosen) return;
     setError(null);
 
-    // Checked here too so an obvious mistake is caught before a 5MB round
+    // Checked here too so an obvious mistake is caught before the round
     // trip. The server still decides — this is courtesy, not validation.
-    if (chosen.size > 5 * 1024 * 1024) {
-      setError('That image is larger than 5MB. Please choose a smaller one.');
+    if (chosen.size > maxSizeMb * 1024 * 1024) {
+      setError(`That image is larger than ${maxSizeMb}MB. Please choose a smaller one.`);
       return;
     }
 
@@ -102,7 +108,7 @@ export function ImageUpload({
       ) : (
         <div className={styles.dropzone}>
           <p className={styles.dropText}>
-            {pending ? 'Uploading…' : 'JPEG, PNG or WebP · up to 5MB'}
+            {pending ? 'Uploading…' : `${accept.includes('webp') ? 'JPEG, PNG or WebP' : 'JPEG or PNG'} · up to ${maxSizeMb}MB`}
           </p>
           <Button type="button" variant="secondary" disabled={pending}
             onClick={() => inputRef.current?.click()}>
@@ -116,7 +122,7 @@ export function ImageUpload({
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept={accept}
         className="visually-hidden"
         onChange={(e) => {
           choose(e.target.files?.[0]);

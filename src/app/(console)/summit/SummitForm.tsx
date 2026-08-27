@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Callout, Field, inputClass, selectClass, textareaClass, checkRowClass } from '@/components/ui';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { ImageUpload } from '@/components/forms/ImageUpload';
-import type { ReferenceData } from '@/lib/api/types';
+import type { ReferenceData, CertificateTemplate } from '@/lib/api/types';
 import { createSummitAction, updateSummitAction } from './actions';
 import { emptyAdminState } from './state';
 import type { AdminSummitEvent } from './types';
@@ -27,8 +27,11 @@ const TIMEZONES = [
 ];
 
 export function SummitForm({
-  event, countries, apiBase,
-}: { event?: AdminSummitEvent; countries: ReferenceData['countries']; apiBase: string }) {
+  event, countries, apiBase, certificateTemplates = [],
+}: {
+  event?: AdminSummitEvent; countries: ReferenceData['countries']; apiBase: string;
+  certificateTemplates?: CertificateTemplate[];
+}) {
   const [state, formAction] = useActionState(
     event ? updateSummitAction : createSummitAction,
     emptyAdminState,
@@ -246,6 +249,19 @@ export function SummitForm({
               </span>
             </span>
           </label>
+        )}
+
+        {issuesCertificate && (
+          <Field label="Second signatory" htmlFor="certificateTemplateId"
+            hint="Who signs alongside the Director. Leave as default unless a guest or co-signatory applies to this event.">
+            <select id="certificateTemplateId" name="certificateTemplateId" className={selectClass}
+              defaultValue={event?.certificate?.templateId ?? ''}>
+              <option value="">Default signatory</option>
+              {certificateTemplates.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}{t.isDefault ? ' (default)' : ''}</option>
+              ))}
+            </select>
+          </Field>
         )}
       </fieldset>
 

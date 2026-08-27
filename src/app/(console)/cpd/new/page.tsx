@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireStaff, can } from '@/lib/auth/require-staff';
 import { apiRequest } from '@/lib/api/client';
-import type { ReferenceData } from '@/lib/api/types';
+import { apiAsUser } from '@/lib/auth/session';
+import type { ReferenceData, CertificateTemplate } from '@/lib/api/types';
 import { CpdForm } from '../CpdForm';
 import styles from '../../admin.module.css';
 
@@ -20,6 +21,12 @@ export default async function NewCpdPage() {
     countries = data.countries;
   } catch { /* the form still works without the country list */ }
 
+  let certificateTemplates: CertificateTemplate[] = [];
+  try {
+    const { data } = await apiAsUser<CertificateTemplate[]>('/certificate-templates');
+    certificateTemplates = data;
+  } catch { /* form still works — the picker just offers only the default */ }
+
   // The browser loads image previews directly, so it needs the public base.
   const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
@@ -35,7 +42,7 @@ export default async function NewCpdPage() {
         </div>
       </header>
 
-      <CpdForm countries={countries} apiBase={apiBase} />
+      <CpdForm countries={countries} apiBase={apiBase} certificateTemplates={certificateTemplates} />
     </>
   );
 }

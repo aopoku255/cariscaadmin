@@ -36,6 +36,16 @@ const TYPE_LABEL: Record<string, string> = {
   FILE: 'File upload',
 };
 
+const PAYMENT_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
+  SUCCESSFUL: 'success',
+  PENDING: 'warning',
+  PROCESSING: 'warning',
+  FAILED: 'danger',
+  CANCELLED: 'neutral',
+  REFUNDED: 'neutral',
+  PARTIALLY_REFUNDED: 'neutral',
+};
+
 export default async function RegistrationDetailPage({ params }: { params: Params }) {
   const user = await requireStaff('/registrations');
   const { reference } = await params;
@@ -173,6 +183,27 @@ export default async function RegistrationDetailPage({ params }: { params: Param
               </div>
             </dl>
           </section>
+
+          {registration.payments && registration.payments.length > 0 && (
+            <section className={panel.panel}>
+              <h2 className={panel.panelTitle}>Payment</h2>
+              <dl className={panel.facts}>
+                {registration.payments.map((p) => (
+                  <div key={p.reference} className={panel.factRow}>
+                    <dt className={panel.factLabel}>
+                      {p.provider} · {money(p.amount)}
+                    </dt>
+                    <dd className={panel.factValue}>
+                      <Badge tone={PAYMENT_TONE[p.status]}>{p.status}</Badge>
+                      <span className={styles.mono}> {p.reference}</span>
+                      {p.paidAt && <> · paid {timestamp(p.paidAt)}</>}
+                      {p.failureReason && <> — {p.failureReason}</>}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
 
           {can(user, 'registration.update') && <WaiveFeePanel registration={registration} />}
 
