@@ -1,8 +1,9 @@
-import type { PublicEvent } from '@/lib/api/types';
+import type { EvaluationQuestion, PublicEvent } from '@/lib/api/types';
 
 /** What /cpd/events/:id returns — the public shape plus operational fields. */
 export interface AdminCpdEvent extends PublicEvent {
   onlineUrl: string | null;
+  evaluationQuestions?: EvaluationQuestion[];
   capacity: number | null;
   virtualCapacity: number | null;
   allowWaitlist: boolean;

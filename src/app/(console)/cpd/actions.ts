@@ -89,6 +89,7 @@ function eventBody(fd: FormData) {
     registrationClosesAt: instant(fd, 'registrationClosesDate', 'registrationClosesTime'),
     issuesCertificate: bool(fd, 'issuesCertificate'),
     certificateRequiresPayment: bool(fd, 'certificateRequiresPayment'),
+    certificateRequiresEvaluation: bool(fd, 'certificateRequiresEvaluation'),
     certificateTemplateId: str(fd, 'certificateTemplateId') ? Number(str(fd, 'certificateTemplateId')) : null,
     attendanceRule: str(fd, 'attendanceRule') ?? 'CHECK_IN',
     minAttendancePercent: str(fd, 'minAttendancePercent') ? num(fd, 'minAttendancePercent') : null,
@@ -185,6 +186,30 @@ export async function saveQuestionsAction(
 
   revalidatePath(`/cpd/${id}`);
   return { ok: true, message: 'Registration questions saved.' };
+}
+
+/** Same shape as `saveQuestionsAction` — the post-event survey, not the registration form. */
+export async function saveEvaluationQuestionsAction(
+  _prev: AdminActionState, formData: FormData,
+): Promise<AdminActionState> {
+  const id = String(formData.get('id'));
+
+  const payload = formData.get('questions');
+  let questions: unknown;
+  try {
+    questions = JSON.parse(String(payload || '[]'));
+  } catch {
+    return { ok: false, message: 'The question list could not be read. Please reload and try again.' };
+  }
+
+  try {
+    await apiAsUser(`/cpd/events/${id}/evaluation-questions`, { method: 'PUT', body: { questions } });
+  } catch (err) {
+    return toState(err);
+  }
+
+  revalidatePath(`/cpd/${id}`);
+  return { ok: true, message: 'Survey questions saved.' };
 }
 
 /** Replaces the whole speaker list in one call, matching prices and questions. */

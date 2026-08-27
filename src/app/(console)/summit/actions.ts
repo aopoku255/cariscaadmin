@@ -79,6 +79,7 @@ function eventBody(fd: FormData) {
     registrationClosesAt: instant(fd, 'registrationClosesDate', 'registrationClosesTime'),
     issuesCertificate: bool(fd, 'issuesCertificate'),
     certificateRequiresPayment: bool(fd, 'certificateRequiresPayment'),
+    certificateRequiresEvaluation: bool(fd, 'certificateRequiresEvaluation'),
     certificateTemplateId: str(fd, 'certificateTemplateId') ? Number(str(fd, 'certificateTemplateId')) : null,
     attendanceRule: str(fd, 'attendanceRule') ?? 'CHECK_IN',
     minAttendancePercent: str(fd, 'minAttendancePercent') ? num(fd, 'minAttendancePercent') : null,
@@ -167,6 +168,29 @@ export async function saveQuestionsAction(
 
   revalidatePath(`/summit/${id}`);
   return { ok: true, message: 'Registration questions saved.' };
+}
+
+/** Same shape as `saveQuestionsAction` — the post-event survey, not the registration form. */
+export async function saveEvaluationQuestionsAction(
+  _prev: AdminActionState, formData: FormData,
+): Promise<AdminActionState> {
+  const id = String(formData.get('id'));
+
+  let questions: unknown;
+  try {
+    questions = JSON.parse(String(formData.get('questions') || '[]'));
+  } catch {
+    return { ok: false, message: 'The question list could not be read. Please reload and try again.' };
+  }
+
+  try {
+    await apiAsUser(`/summit/events/${id}/evaluation-questions`, { method: 'PUT', body: { questions } });
+  } catch (err) {
+    return toState(err);
+  }
+
+  revalidatePath(`/summit/${id}`);
+  return { ok: true, message: 'Survey questions saved.' };
 }
 
 export async function saveSpeakersAction(

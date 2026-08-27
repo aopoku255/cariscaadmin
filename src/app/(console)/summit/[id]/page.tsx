@@ -10,14 +10,15 @@ import { statusTone, statusLabel } from '../../status';
 import type { AdminSummitEvent, EventSummary } from '../types';
 import type { Partner, ReferenceData } from '@/lib/api/types';
 import { LifecycleControls } from '@/components/admin/event/LifecycleControls';
-import { QuestionsEditor } from '@/components/admin/event/QuestionsEditor';
+import { QuestionsEditor, EVALUATION_TYPES } from '@/components/admin/event/QuestionsEditor';
 import { EventPartners } from '@/components/admin/event/EventPartners';
 import { PricesEditor } from '@/components/admin/event/PricesEditor';
 import { SpeakersEditor } from '@/components/admin/event/SpeakersEditor';
 import { TracksEditor } from './TracksEditor';
 import { SponsorshipTiersEditor } from './SponsorshipTiersEditor';
 import {
-  transitionSummitAction, saveQuestionsAction, savePricesAction, saveSpeakersAction, saveSummitPartnersAction,
+  transitionSummitAction, saveQuestionsAction, saveEvaluationQuestionsAction,
+  savePricesAction, saveSpeakersAction, saveSummitPartnersAction,
 } from '../actions';
 import styles from '../summit.module.css';
 import admin from '../../admin.module.css';
@@ -220,6 +221,22 @@ export default async function AdminSummitEventPage({
               action={saveQuestionsAction}
             />
           </Card>
+
+          {event.certificate.issues && (
+            <Card>
+              <h2 className={styles.cardTitle}>Post-event survey</h2>
+              <QuestionsEditor
+                eventId={event.id}
+                questions={event.evaluationQuestions ?? []}
+                canEdit={can(user, 'evaluation.manage')}
+                action={saveEvaluationQuestionsAction}
+                availableTypes={EVALUATION_TYPES}
+                hint={event.certificate.requiresEvaluation
+                  ? 'Participants must answer every required question here before they can download their certificate.'
+                  : 'Not required yet — turn on "Require the post-event survey" when editing this event for it to gate the certificate.'}
+              />
+            </Card>
+          )}
 
           <Card>
             <h2 className={styles.cardTitle}>Sponsorship tiers</h2>

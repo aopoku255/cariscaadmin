@@ -66,6 +66,22 @@ export interface RegistrationQuestion {
   sortOrder: number;
 }
 
+/** No EMAIL/PHONE/FILE (not in `evaluation_questions`' own type enum) — RATING/NPS added instead. */
+export type EvaluationQuestionType =
+  | 'TEXT' | 'LONGTEXT' | 'NUMBER' | 'SELECT' | 'MULTISELECT'
+  | 'RADIO' | 'CHECKBOX' | 'RATING' | 'NPS' | 'DATE';
+
+/** The post-event survey — admin-only, never on the public event shape. */
+export interface EvaluationQuestion {
+  id: string;
+  label: string;
+  type: EvaluationQuestionType;
+  options: QuestionOption[] | null;
+  category: string | null;
+  required: boolean;
+  sortOrder: number;
+}
+
 export interface EventPrice {
   id: string;
   tier: string;
@@ -310,7 +326,10 @@ export interface ResponseOption {
 export interface QuestionResponses {
   id: string;
   label: string;
-  type: QuestionType;
+  // Widened rather than duplicating this whole interface for evaluation
+  // responses — the summary shape (`summariseResponses` in the API) is
+  // exactly the same either way, just with a different type vocabulary.
+  type: QuestionType | EvaluationQuestionType;
   required: boolean;
   answered: number;
   skipped: number;

@@ -1,4 +1,4 @@
-import type { PublicEvent } from '@/lib/api/types';
+import type { EvaluationQuestion, PublicEvent } from '@/lib/api/types';
 
 /**
  * What /summit/events/:id returns — the public shape plus operational
@@ -10,6 +10,7 @@ import type { PublicEvent } from '@/lib/api/types';
  */
 export interface AdminSummitEvent extends PublicEvent {
   onlineUrl: string | null;
+  evaluationQuestions?: EvaluationQuestion[];
   capacity: number | null;
   virtualCapacity: number | null;
   allowWaitlist: boolean;

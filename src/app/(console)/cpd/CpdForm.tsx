@@ -250,6 +250,21 @@ export function CpdForm({
         )}
 
         {issuesCertificate && (
+          <label className={checkRowClass}>
+            <input type="checkbox" name="certificateRequiresEvaluation"
+              defaultChecked={event?.certificate?.requiresEvaluation ?? false} />
+            <span>
+              <strong>Require the post-event survey</strong>
+              <span className={styles.checkNote}>
+                Set the survey questions themselves from the event page, after saving.
+                Leave this off until they are ready — otherwise eligibility waits on a
+                survey nobody can answer yet and no certificate is ever issued.
+              </span>
+            </span>
+          </label>
+        )}
+
+        {issuesCertificate && (
           <Field label="Second signatory" htmlFor="certificateTemplateId"
             hint="Who signs alongside the Director. Leave as default unless a guest or co-signatory applies to this event.">
             <select id="certificateTemplateId" name="certificateTemplateId" className={selectClass}

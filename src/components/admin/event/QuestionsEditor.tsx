@@ -3,16 +3,17 @@
 import { useActionState, useState } from 'react';
 import { Callout, Button, inputClass, selectClass } from '@/components/ui';
 import { SubmitButton } from '@/components/forms/SubmitButton';
-import type { RegistrationQuestion, QuestionType } from '@/lib/api/types';
+import type { RegistrationQuestion, EvaluationQuestion } from '@/lib/api/types';
 import { emptyAdminState, type AdminAction } from './state';
 import styles from './AdminEvent.module.css';
 
 /**
- * Builds the event's registration form.
- *
- * The whole set is submitted as JSON in one hidden field, matching the API's
- * replace-everything endpoint. Editing rows in the browser and saving once is
- * far less error-prone than a request per question.
+ * Builds a per-event question set — the registration form, or (via
+ * `availableTypes`/`hiddenIntro`) the post-event survey. Same editing UX
+ * either way: the whole set is submitted as JSON in one hidden field,
+ * matching the API's replace-everything endpoint. Editing rows in the
+ * browser and saving once is far less error-prone than a request per
+ * question.
  *
  * Shared between CPD and Summit — see PricesEditor for why.
  */
@@ -32,12 +33,12 @@ interface Draft {
   key: string;
   label: string;
   helpText: string;
-  type: QuestionType;
+  type: string;
   required: boolean;
   options: Option[];
 }
 
-const TYPES: { value: QuestionType; label: string }[] = [
+const REGISTRATION_TYPES = [
   { value: 'TEXT', label: 'Short text' },
   { value: 'LONGTEXT', label: 'Long text' },
   { value: 'NUMBER', label: 'Number' },
@@ -51,21 +52,34 @@ const TYPES: { value: QuestionType; label: string }[] = [
   { value: 'FILE', label: 'File upload' },
 ];
 
-const NEEDS_OPTIONS: QuestionType[] = ['SELECT', 'RADIO', 'MULTISELECT'];
+export const EVALUATION_TYPES = [
+  { value: 'RATING', label: 'Rating (1–5)' },
+  { value: 'NPS', label: 'Likelihood to recommend (0–10)' },
+  { value: 'TEXT', label: 'Short text' },
+  { value: 'LONGTEXT', label: 'Long text' },
+  { value: 'NUMBER', label: 'Number' },
+  { value: 'DATE', label: 'Date' },
+  { value: 'SELECT', label: 'Choose one (dropdown)' },
+  { value: 'RADIO', label: 'Choose one (buttons)' },
+  { value: 'MULTISELECT', label: 'Choose several' },
+  { value: 'CHECKBOX', label: 'Single checkbox' },
+];
+
+const NEEDS_OPTIONS = ['SELECT', 'RADIO', 'MULTISELECT'];
 
 /** Several answers allowed, so the marker is a box rather than a bullet. */
-const isMulti = (type: QuestionType) => type === 'MULTISELECT';
+const isMulti = (type: string) => type === 'MULTISELECT';
 
 const slug = (label: string) => label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
 
 let counter = 0;
 const newKey = () => `q${Date.now()}-${(counter += 1)}`;
 
-function toDraft(q: RegistrationQuestion): Draft {
+function toDraft(q: RegistrationQuestion | EvaluationQuestion): Draft {
   return {
     key: q.id,
     label: q.label,
-    helpText: q.helpText ?? '',
+    helpText: 'helpText' in q ? q.helpText ?? '' : '',
     type: q.type,
     required: q.required,
     options: q.options ?? [],
@@ -73,12 +87,20 @@ function toDraft(q: RegistrationQuestion): Draft {
 }
 
 export function QuestionsEditor({
-  eventId, questions, canEdit, action,
+  eventId, questions, canEdit, action, availableTypes = REGISTRATION_TYPES, hint,
 }: {
-  eventId: string; questions: RegistrationQuestion[]; canEdit: boolean; action: AdminAction;
+  eventId: string;
+  questions: (RegistrationQuestion | EvaluationQuestion)[];
+  canEdit: boolean;
+  action: AdminAction;
+  /** Defaults to the registration-question set; pass `EVALUATION_TYPES` for a survey. */
+  availableTypes?: { value: string; label: string }[];
+  /** Replaces the default "name/email/organization..." intro paragraph. */
+  hint?: string;
 }) {
   const [state, formAction] = useActionState(action, emptyAdminState);
   const [drafts, setDrafts] = useState<Draft[]>(questions.map(toDraft));
+  const TYPES = availableTypes;
 
   // Drag state. `armed` is the row whose handle is being held — the <li> is
   // only draggable then, or the inputs inside it would stop being selectable.
@@ -126,7 +148,7 @@ export function QuestionsEditor({
    * there is somewhere to type immediately rather than an empty panel and a
    * warning.
    */
-  const changeType = (d: Draft, type: QuestionType) => {
+  const changeType = (d: Draft, type: string) => {
     const needsOptions = NEEDS_OPTIONS.includes(type);
     update(d.key, {
       type,
@@ -180,9 +202,12 @@ export function QuestionsEditor({
       )}
 
       <p className={styles.muted}>
-        Name, email, organization and country are already collected from every
-        participant&apos;s profile. Only add what is specific to this event.
-        Drag a question by its handle to reorder, or use the arrows.
+        {hint ?? (
+          <>
+            Name, email, organization and country are already collected from every
+            participant&apos;s profile. Only add what is specific to this event.
+          </>
+        )}{' '}Drag a question by its handle to reorder, or use the arrows.
       </p>
 
       {drafts.length === 0 && (
@@ -246,7 +271,7 @@ export function QuestionsEditor({
                 <select
                   className={selectClass}
                   value={d.type}
-                  onChange={(e) => changeType(d, e.target.value as QuestionType)}
+                  onChange={(e) => changeType(d, e.target.value)}
                   aria-label={`Answer type for question ${i + 1}`}
                 >
                   {TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
