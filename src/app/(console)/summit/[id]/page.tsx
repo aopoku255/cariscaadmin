@@ -64,7 +64,7 @@ export default async function AdminSummitEventPage({
 
   let currencies: ReferenceData['currencies'] = [];
   try {
-    const { data } = await apiRequest<ReferenceData>('/reference', { revalidate: 3600 });
+    const { data } = await apiRequest<ReferenceData>('/reference');
     currencies = data.currencies;
   } catch { /* the editor falls back to the codes it already has */ }
 

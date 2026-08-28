@@ -29,7 +29,7 @@ export default async function EditSummitPage({ params }: { params: Params }) {
 
   let countries: ReferenceData['countries'] = [];
   try {
-    const { data } = await apiRequest<ReferenceData>('/reference', { revalidate: 3600 });
+    const { data } = await apiRequest<ReferenceData>('/reference');
     countries = data.countries;
   } catch { /* form still works */ }
 

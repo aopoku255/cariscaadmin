@@ -61,7 +61,7 @@ export default async function UserDetailPage({
     canEdit
       ? apiAsUser<Department[]>('/admin/departments').then((r) => r.data ?? []).catch(() => [])
       : Promise.resolve<Department[]>([]),
-    apiRequest<ReferenceData>('/reference', { revalidate: 3600 })
+    apiRequest<ReferenceData>('/reference')
       .then((r) => r.data.countries).catch(() => []),
     // What has been done to this account, from the same log the audit page
     // reads. Answering "who changed this?" on the record itself beats sending

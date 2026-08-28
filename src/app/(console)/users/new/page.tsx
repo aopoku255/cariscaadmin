@@ -22,7 +22,7 @@ export default async function NewUserPage() {
       ? apiAsUser<Role[]>('/admin/roles').then((r) => r.data ?? []).catch(() => [])
       : Promise.resolve<Role[]>([]),
     apiAsUser<Department[]>('/admin/departments').then((r) => r.data ?? []).catch(() => []),
-    apiRequest<ReferenceData>('/reference', { revalidate: 3600 })
+    apiRequest<ReferenceData>('/reference')
       .then((r) => r.data.countries).catch(() => []),
   ]);
 

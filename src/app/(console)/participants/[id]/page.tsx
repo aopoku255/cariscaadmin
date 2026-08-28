@@ -53,7 +53,7 @@ export default async function ParticipantDetailPage({
   const canEdit = can(viewer, 'users.update');
 
   const [countries, history] = await Promise.all([
-    apiRequest<ReferenceData>('/reference', { revalidate: 3600 })
+    apiRequest<ReferenceData>('/reference')
       .then((r) => r.data.countries).catch(() => []),
     can(viewer, 'audit.view')
       ? apiAsUser<AuditLogEntry[]>('/admin/audit-logs', {

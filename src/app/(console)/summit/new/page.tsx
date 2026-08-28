@@ -16,7 +16,7 @@ export default async function NewSummitPage() {
 
   let countries: ReferenceData['countries'] = [];
   try {
-    const { data } = await apiRequest<ReferenceData>('/reference', { revalidate: 3600 });
+    const { data } = await apiRequest<ReferenceData>('/reference');
     countries = data.countries;
   } catch { /* the form still works without the country list */ }
 
