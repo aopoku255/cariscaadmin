@@ -155,7 +155,7 @@ export function SpeakersEditor({
                   <input
                     className={inputClass}
                     value={r.title}
-                    placeholder="Title, e.g. Professor of Logistics"
+                    placeholder="Title, e.g. Dr., Prof. — shown before their name"
                     aria-label={`Title for speaker ${i + 1}`}
                     onChange={(e) => update(r.key, { title: e.target.value })}
                   />

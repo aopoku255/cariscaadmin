@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Callout, Field, inputClass, selectClass, textareaClass, checkRowClass } from '@/components/ui';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { ImageUpload } from '@/components/forms/ImageUpload';
+import { RichTextEditor } from '@/components/forms/RichTextEditor';
 import type { ReferenceData, CertificateTemplate } from '@/lib/api/types';
 import { createSummitAction, updateSummitAction } from './actions';
 import { emptyAdminState } from './state';
@@ -75,11 +76,13 @@ export function SummitForm({
             maxLength={500} defaultValue={event?.shortDescription ?? ''} style={{ minHeight: 70 }} />
         </Field>
 
-        <Field label="Full description" htmlFor="description" error={err('description')}
-          hint="Leave a blank line between paragraphs.">
-          <textarea id="description" name="description" className={textareaClass}
-            defaultValue={event?.description ?? ''} style={{ minHeight: 160 }} />
-        </Field>
+        <RichTextEditor
+          name="description"
+          label="Full description"
+          hint="Shown on the event's own page. Formatting here — bold, headings, lists — carries through to what participants see."
+          defaultValue={event?.description ?? ''}
+          error={err('description')}
+        />
 
         <ImageUpload
           name="bannerFileId"

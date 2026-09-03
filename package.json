@@ -2,7 +2,9 @@
   "name": "carisca-admin",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": ">=20.11" },
+  "engines": {
+    "node": ">=20.11"
+  },
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
@@ -10,6 +12,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@tiptap/react": "^3.31.2",
+    "@tiptap/starter-kit": "^3.31.2",
     "next": "^15.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
