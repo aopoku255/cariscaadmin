@@ -6,6 +6,16 @@ const nextConfig = {
   // the container ships without the full node_modules tree. No effect on
   // `next dev` or a plain `next start`.
   output: 'standalone',
+  experimental: {
+    // Every image (banner, speaker photo, org logo, certificate signature)
+    // goes through uploadFileAction as a Server Action, and Next's default
+    // 1mb cap sits well under the storage service's own per-purpose limits
+    // (up to 5mb here) — a real, un-resized photo silently fails against the
+    // framework's ceiling before it ever reaches that validation. Matched to
+    // storage.service.js's hard multer ceiling so raising a purpose's limit
+    // there can't reintroduce this.
+    serverActions: { bodySizeLimit: '10mb' },
+  },
   async headers() {
     return [{
       source: '/:path*',
