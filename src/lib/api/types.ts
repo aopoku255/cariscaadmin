@@ -242,6 +242,10 @@ export interface Registration {
     organization: string | null;
     countryCode: string | null;
   };
+  /** Staff viewers only: whether they were admitted (null = no record yet). */
+  attendance?: { status: 'CHECKED_IN' | 'ATTENDED' | 'ABSENT' | 'REGISTERED'; checkedInAt: string | null; method: string | null } | null;
+  /** Staff viewers only: whether a certificate can be issued by hand. */
+  adminCertificate?: { eligible: true } | { eligible: false; code?: string; reason: string };
   /** Every payment attempt, most recent first. */
   payments?: {
     reference: string;

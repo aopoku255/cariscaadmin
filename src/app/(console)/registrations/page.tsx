@@ -78,6 +78,13 @@ export default async function RegistrationsPage({ searchParams }: { searchParams
             {meta ? `${meta.total} matching` : 'Everyone signed up across CPD events'}
           </p>
         </div>
+        {can(user, 'registration.create') && (
+          <div className={styles.pageActions}>
+            <ButtonLink href={`/registrations/new${params.eventId ? `?eventId=${params.eventId}` : ''}`}>
+              Add a participant
+            </ButtonLink>
+          </div>
+        )}
         {can(user, 'registration.export') && params.eventId && (
           <div className={styles.pageActions}>
             {/*

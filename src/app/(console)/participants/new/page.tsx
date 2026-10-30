@@ -20,9 +20,11 @@ export default async function NewParticipantPage() {
   if (!can(user, 'users.create')) redirect('/participants');
 
   let countries: ReferenceData['countries'] = [];
+  let reference: ReferenceData | null = null;
   try {
     const { data } = await apiRequest<ReferenceData>('/reference');
     countries = data.countries;
+    reference = data;
   } catch { /* the form still works without the country list */ }
 
   return (
@@ -35,7 +37,9 @@ export default async function NewParticipantPage() {
           <h1 className={styles.pageTitle}>Add a participant</h1>
           <p className={styles.pageSub}>
             For someone registering by phone or in person. The account works
-            straight away — give them the password yourself.
+            straight away. We email them their sign-in details; you can also give
+            them the password yourself. To also register them for an event, use
+            “Add a participant” on the event or the registrations page.
           </p>
         </div>
       </header>
@@ -44,6 +48,7 @@ export default async function NewParticipantPage() {
         countries={countries}
         canSetStatus={false}
         canAssignRoles={false}
+        reference={reference}
       />
     </>
   );

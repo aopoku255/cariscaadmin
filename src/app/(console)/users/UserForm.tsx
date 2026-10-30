@@ -38,6 +38,7 @@ const TIMEZONES = [
  */
 export function UserForm({
   user, roles = [], departments = [], countries, canSetStatus, canAssignRoles, createAsStaff = false,
+  reference = null,
 }: {
   user?: AdminUser;
   roles?: Role[];
@@ -47,6 +48,8 @@ export function UserForm({
   canAssignRoles: boolean;
   /** Ignored when editing `user`, where the toggle below decides it instead. */
   createAsStaff?: boolean;
+  /** Lets a new participant be created registration-ready (gender, position, sector). */
+  reference?: ReferenceData | null;
 }) {
   const createAction = createAsStaff ? createUserAction : createParticipantAction;
   const [state, formAction] = useActionState(
@@ -151,6 +154,28 @@ export function UserForm({
             <input id="jobTitle" name="jobTitle" className={inputClass}
               defaultValue={user?.jobTitle ?? ''} maxLength={160} />
           </Field>
+          {!user && !createAsStaff && reference && (
+            <>
+              <Field label="Gender" htmlFor="gender" error={err('gender')}>
+                <select id="gender" name="gender" className={selectClass} defaultValue="">
+                  <option value="">Not given</option>
+                  {reference.genders.map((g) => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </Field>
+              <Field label="Position" htmlFor="positionKey" error={err('positionKey')}>
+                <select id="positionKey" name="positionKey" className={selectClass} defaultValue="">
+                  <option value="">Not given</option>
+                  {reference.positions.map((p) => <option key={p.key} value={p.key}>{p.label}</option>)}
+                </select>
+              </Field>
+              <Field label="Sector" htmlFor="sectorKey" error={err('sectorKey')}>
+                <select id="sectorKey" name="sectorKey" className={selectClass} defaultValue="">
+                  <option value="">Not given</option>
+                  {reference.sectors.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+                </select>
+              </Field>
+            </>
+          )}
         </div>
 
         <div className={styles.pair}>

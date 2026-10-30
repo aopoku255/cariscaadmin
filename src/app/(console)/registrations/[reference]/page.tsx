@@ -9,12 +9,15 @@ import {
   registrationStatusLabel, registrationTone, money, timestamp, eventDateRange,
 } from '@/lib/format';
 import { WaiveFeePanel } from './WaiveFeePanel';
+import { AttendancePanel } from './AttendancePanel';
+import { CertificatePanel } from './CertificatePanel';
 import styles from '../../admin.module.css';
 import panel from '../registrations.module.css';
 
 export const dynamic = 'force-dynamic';
 
 type Params = Promise<{ reference: string }>;
+type SearchParams = Promise<{ added?: string; account?: string; emailSent?: string }>;
 
 export async function generateMetadata({ params }: { params: Params }) {
   const { reference } = await params;
@@ -46,9 +49,12 @@ const PAYMENT_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'>
   PARTIALLY_REFUNDED: 'neutral',
 };
 
-export default async function RegistrationDetailPage({ params }: { params: Params }) {
+export default async function RegistrationDetailPage({
+  params, searchParams,
+}: { params: Params; searchParams: SearchParams }) {
   const user = await requireStaff('/registrations');
   const { reference } = await params;
+  const flash = await searchParams;
 
   let registration: Registration;
   try {
@@ -85,6 +91,16 @@ export default async function RegistrationDetailPage({ params }: { params: Param
           </Badge>
         </div>
       </header>
+
+      {flash.added && (
+        <Callout tone="success" title="Participant registered">
+          {flash.account === '1'
+            ? (flash.emailSent === '1'
+              ? 'A new account was created. Their sign-in details and registration confirmation have been emailed to them.'
+              : 'A new account was created, but the sign-in email could not be sent. Their registration email is queued — give them their password yourself or reset it from their account.')
+            : 'They already had an account, so it was used. Their registration confirmation has been emailed to them.'}
+        </Callout>
+      )}
 
       <div className={panel.detail}>
         <div className={panel.side} style={{ gap: 'var(--space-4)' }}>
@@ -206,6 +222,12 @@ export default async function RegistrationDetailPage({ params }: { params: Param
           )}
 
           {can(user, 'registration.update') && <WaiveFeePanel registration={registration} />}
+
+          {(can(user, 'attendance.view') || can(user, 'attendance.mark')) && (
+            <AttendancePanel registration={registration} canMark={can(user, 'attendance.mark')} />
+          )}
+
+          {can(user, 'certificate.generate') && <CertificatePanel registration={registration} />}
 
           <section className={panel.panel}>
             <h2 className={panel.panelTitle}>Participant</h2>
