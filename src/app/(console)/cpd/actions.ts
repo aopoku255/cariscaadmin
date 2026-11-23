@@ -69,6 +69,7 @@ function instant(fd: FormData, dateKey: string, timeKey: string) {
 function eventBody(fd: FormData) {
   return {
     title: str(fd, 'title'),
+    programme: str(fd, 'programme'),
     shortDescription: str(fd, 'shortDescription'),
     description: str(fd, 'description'),
     // Null rather than undefined when empty: the field is always present in

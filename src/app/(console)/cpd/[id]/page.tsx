@@ -112,6 +112,11 @@ export default async function AdminEventPage({
               Responses
             </ButtonLink>
           )}
+          {can(user, 'registration.email') && (
+            <ButtonLink href={`/registrations/email?eventId=${event.id}`} variant="secondary">
+              Email participants
+            </ButtonLink>
+          )}
           {can(user, 'registration.create') && (
             <ButtonLink href={`/registrations/new?eventId=${event.id}`} variant="secondary">
               Add a participant

@@ -131,3 +131,47 @@ export async function markAttendedAction(
   revalidatePath(`/registrations/${reference}`);
   return { ok: true, message: 'Marked as attended.' };
 }
+
+/**
+ * Emails an event's participants: everyone matching the filters, or one
+ * registration when `reference` is given. The API queues the messages and the
+ * background jobs deliver them, so a large send returns straight away.
+ */
+export async function sendEmailAction(
+  _prev: AdminActionState, formData: FormData,
+): Promise<AdminActionState> {
+  const eventId = Number(formData.get('eventId') || 0);
+  const subject = text(formData, 'subject');
+  const message = text(formData, 'message');
+  const reference = text(formData, 'reference');
+  const status = text(formData, 'status');
+  const attendanceMode = text(formData, 'attendanceMode');
+
+  if (!eventId) return { ok: false, fieldErrors: { eventId: 'Choose an event.' } };
+  const fieldErrors: Record<string, string> = {};
+  if (!subject) fieldErrors.subject = 'Enter a subject.';
+  if (!message) fieldErrors.message = 'Write a message.';
+  if (Object.keys(fieldErrors).length) return { ok: false, fieldErrors };
+
+  let queued = 0;
+  try {
+    const { data } = await apiAsUser<{ queued: number }>('/registrations/email', {
+      method: 'POST',
+      body: {
+        eventId,
+        subject,
+        message,
+        ...(reference ? { references: [reference] } : {}),
+        ...(status ? { statuses: [status] } : {}),
+        ...(attendanceMode ? { attendanceMode } : {}),
+      },
+    });
+    queued = data.queued;
+  } catch (err) {
+    return toState(err);
+  }
+
+  const back = new URLSearchParams({ eventId: String(eventId), sent: String(queued) });
+  if (reference) back.set('reference', reference);
+  redirect(`/registrations/email?${back.toString()}`);
+}

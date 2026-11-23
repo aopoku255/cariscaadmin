@@ -125,6 +125,11 @@ export default async function AdminSummitEventPage({
               Abstracts{abstractCount !== null ? ` (${abstractCount})` : ''}
             </ButtonLink>
           )}
+          {can(user, 'registration.email') && (
+            <ButtonLink href={`/registrations/email?eventId=${event.id}`} variant="secondary">
+              Email participants
+            </ButtonLink>
+          )}
           {can(user, 'registration.create') && (
             <ButtonLink href={`/registrations/new?eventId=${event.id}`} variant="secondary">
               Add a participant

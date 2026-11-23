@@ -63,6 +63,15 @@ export function CpdForm({
       <fieldset className={styles.group}>
         <legend className={styles.groupTitle}>The basics</legend>
 
+        <Field label="Kind of programme" htmlFor="programme" error={err('programme')}
+          hint="Shown as the tag on the event card and page. Both run with the same fees, questions and certificates.">
+          <select id="programme" name="programme" className={selectClass}
+            defaultValue={event?.type?.key === 'dls' ? 'dls' : 'cpd'}>
+            <option value="cpd">Continuing Professional Development</option>
+            <option value="dls">Distinguished Lecture Series</option>
+          </select>
+        </Field>
+
         <Field label="Title" htmlFor="title" error={err('title')} required>
           <input id="title" name="title" className={inputClass} required
             defaultValue={event?.title} maxLength={255} />

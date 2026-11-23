@@ -249,6 +249,12 @@ export default async function RegistrationDetailPage({
                 <dd className={panel.factValue}>{participant?.countryCode ?? '-'}</dd>
               </div>
             </dl>
+            {event && can(user, 'registration.email') && (
+              <Link href={`/registrations/email?eventId=${event.id}&reference=${registration.reference}`}
+                style={{ fontSize: 'var(--text-sm)', display: 'block', marginBottom: 'var(--space-2)' }}>
+                Email this participant
+              </Link>
+            )}
             {participant?.id && can(user, 'users.view') && (
               // Almost always a participant — /participants/:id redirects to
               // /users/:id itself on the rare chance this registrant is staff.
