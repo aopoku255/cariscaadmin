@@ -128,7 +128,8 @@ export async function updateCpdAction(
 ): Promise<AdminActionState> {
   const id = String(formData.get('id'));
   try {
-    await apiAsUser(`/cpd/events/${id}`, { method: 'PATCH', body: eventBody(formData) });
+    const notify = formData.get('notifyRegistrants') === 'yes' ? '?notify=true' : '';
+    await apiAsUser(`/cpd/events/${id}${notify}`, { method: 'PATCH', body: eventBody(formData) });
   } catch (err) {
     return toState(err);
   }

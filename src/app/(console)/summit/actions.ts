@@ -116,7 +116,8 @@ export async function updateSummitAction(
 ): Promise<AdminActionState> {
   const id = String(formData.get('id'));
   try {
-    await apiAsUser(`/summit/events/${id}`, { method: 'PATCH', body: eventBody(formData) });
+    const notify = formData.get('notifyRegistrants') === 'yes' ? '?notify=true' : '';
+    await apiAsUser(`/summit/events/${id}${notify}`, { method: 'PATCH', body: eventBody(formData) });
   } catch (err) {
     return toState(err);
   }

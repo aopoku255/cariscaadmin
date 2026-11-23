@@ -51,7 +51,20 @@ export function CpdForm({
   const needsLink = deliveryMode !== 'OFFLINE';
 
   return (
-    <form action={formAction} className={styles.form}>
+    <form
+      action={formAction}
+      className={styles.form}
+      onSubmit={(e) => {
+        // Editing an event can email everyone registered, so ask first.
+        if (!event) return;
+        const send = window.confirm(
+          'Email registered participants about this update?\n\nOK = save and send the email\nCancel = save without emailing',
+        );
+        const field = e.currentTarget.elements.namedItem('notifyRegistrants') as HTMLInputElement | null;
+        if (field) field.value = send ? 'yes' : 'no';
+      }}
+    >
+      <input type="hidden" name="notifyRegistrants" defaultValue="no" />
       {event && <input type="hidden" name="id" value={event.id} />}
 
       {state.message && (
